@@ -2,7 +2,6 @@ package com.assignment.availabilitymanagement.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.proxy.HibernateProxy;
 
 import java.util.Objects;
 import java.util.Set;
