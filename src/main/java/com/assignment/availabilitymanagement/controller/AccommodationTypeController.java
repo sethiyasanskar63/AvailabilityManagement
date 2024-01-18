@@ -6,6 +6,7 @@ import com.assignment.availabilitymanagement.serviceImpl.AccommodationTypeServic
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,14 +17,17 @@ public class AccommodationTypeController {
   @Autowired
   AccommodationTypeServiceImpl accommodationTypeServiceImpl;
 
-  @GetMapping("/getAllAccommodationTypes")
-  public List<AccommodationTypeDTO> getAllAccommodationTypes() {
-    return accommodationTypeServiceImpl.getAllAccommodationTypes().stream().map(AccommodationTypeDTO::new).collect(Collectors.toList());
-  }
-
-  @GetMapping("/getAccommodationTypeById/{id}")
-  public AccommodationTypeDTO getAccommodationTypeById(@PathVariable("id") Long id) {
-    return new AccommodationTypeDTO(accommodationTypeServiceImpl.getAccommodationTypeById(id));
+  @GetMapping("/getAccommodationTypes")
+  public List<AccommodationTypeDTO> getAccommodationTypes(@RequestParam(name = "accommodationTypeId") Long accommodationTypeId) {
+    if (accommodationTypeId==null){
+      return accommodationTypeServiceImpl.getAllAccommodationTypes()
+          .stream()
+          .map(AccommodationTypeDTO::new)
+          .collect(Collectors.toList());
+    }
+    else {
+      return accommodationTypeServiceImpl.getAccommodationTypeById(accommodationTypeId) != null ? List.of() : Collections.emptyList();
+    }
   }
 
   @PostMapping("/addAccommodationType")
@@ -36,8 +40,8 @@ public class AccommodationTypeController {
     return new AccommodationTypeDTO(accommodationTypeServiceImpl.saveAccommodationType(accommodationType));
   }
 
-  @DeleteMapping("/deleteAccommodationTypeById/{id}")
-  public String deleteAccommodationTypeById(@PathVariable("id") Long id) {
-    return accommodationTypeServiceImpl.deleteAccommodationTypeById(id);
+  @DeleteMapping("/deleteAccommodationTypeById")
+  public String deleteAccommodationTypeById(@RequestParam(name = "accommodationTypeId") Long accommodationTypeId) {
+    return accommodationTypeServiceImpl.deleteAccommodationTypeById(accommodationTypeId);
   }
 }

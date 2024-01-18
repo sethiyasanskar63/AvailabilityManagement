@@ -30,9 +30,6 @@ public class Availability {
   @Column(name = "min_night")
   private int minNight;
 
-  @Column(name = "max_night")
-  private int maxNight;
-
   @Column(name = "arrival_days")
   private String arrivalDays;
 
@@ -51,11 +48,11 @@ public class Availability {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof Availability that)) return false;
-    return getAvailabilityId() == that.getAvailabilityId() && getMinNight() == that.getMinNight() && getMaxNight() == that.getMaxNight() && Objects.equals(getStayFromDate(), that.getStayFromDate()) && Objects.equals(getStayToDate(), that.getStayToDate()) && Objects.equals(getArrivalDays(), that.getArrivalDays()) && Objects.equals(getDepartureDays(), that.getDepartureDays()) && Objects.equals(getAccommodationType(), that.getAccommodationType()) && Objects.equals(getAccommodation(), that.getAccommodation());
+    return getAvailabilityId() == that.getAvailabilityId() && getMinNight() == that.getMinNight() && Objects.equals(getStayFromDate(), that.getStayFromDate()) && Objects.equals(getStayToDate(), that.getStayToDate()) && Objects.equals(getArrivalDays(), that.getArrivalDays()) && Objects.equals(getDepartureDays(), that.getDepartureDays()) && Objects.equals(getAccommodationType(), that.getAccommodationType()) && Objects.equals(getAccommodation(), that.getAccommodation());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getAvailabilityId(), getStayFromDate(), getStayToDate(), getMinNight(), getMaxNight(), getArrivalDays(), getDepartureDays(), getAccommodationType(), getAccommodation());
+    return Objects.hash(getAvailabilityId(), getStayFromDate(), getStayToDate(), getMinNight(), getArrivalDays(), getDepartureDays(), getAccommodationType(), getAccommodation());
   }
 }
