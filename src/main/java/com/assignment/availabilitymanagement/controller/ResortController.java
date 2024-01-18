@@ -6,6 +6,7 @@ import com.assignment.availabilitymanagement.serviceImpl.ResortServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,14 +17,17 @@ public class ResortController {
   @Autowired
   ResortServiceImpl resortServiceImpl;
 
-  @GetMapping("/getAllResorts")
-  public List<ResortDTO> getAllResorts() {
-    return resortServiceImpl.getAllResorts().stream().map(ResortDTO::new).collect(Collectors.toList());
-  }
-
-  @GetMapping("/getResortById/{id}")
-  public ResortDTO getResortById(@PathVariable("id") Long id) {
-    return new ResortDTO(resortServiceImpl.getResortById(id));
+  @GetMapping("/getResorts")
+  public List<ResortDTO> getResorts(@RequestParam(name = "resortId", required = false) Long resortId) {
+    if (resortId ==null){
+      return resortServiceImpl.getAllResorts()
+          .stream()
+          .map(ResortDTO::new)
+          .collect(Collectors.toList());
+    }
+    else{
+     return resortServiceImpl.getResortById(resortId) != null ? List.of() : Collections.emptyList();
+    }
   }
 
   @PostMapping("/addResort")
@@ -36,8 +40,8 @@ public class ResortController {
     return new ResortDTO(resortServiceImpl.saveResort(resort));
   }
 
-  @DeleteMapping("/deleteResortById/{id}")
-  public String deleteResortById(@PathVariable("id") Long id) {
-    return resortServiceImpl.deleteResortByID(id);
+  @DeleteMapping("/deleteResortById")
+  public String deleteResortById(@RequestParam(name = "resortId", required = false) Long resortId) {
+    return resortServiceImpl.deleteResortByID(resortId);
   }
 }
