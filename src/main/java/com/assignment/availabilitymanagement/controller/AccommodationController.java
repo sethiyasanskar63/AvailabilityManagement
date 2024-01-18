@@ -6,6 +6,7 @@ import com.assignment.availabilitymanagement.serviceImpl.AccommodationServiceImp
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,14 +17,16 @@ public class AccommodationController {
   @Autowired
   AccommodationServiceImpl accommodationServiceImpl;
 
-  @GetMapping("/getAllAccommodations")
-  public List<AccommodationDTO> getAllAccommodations() {
-    return accommodationServiceImpl.getAllAccommodations().stream().map(AccommodationDTO::new).collect(Collectors.toList());
-  }
-
-  @GetMapping("/getAccommodationById/{id}")
-  public AccommodationDTO getAccommodationById(@PathVariable("id") Long id) {
-    return new AccommodationDTO(accommodationServiceImpl.getAccommodationById(id));
+  @GetMapping("/getAccommodations")
+  public List<AccommodationDTO> getAccommodations(@RequestParam(name = "accommodationId", required = false) Long accommodationId) {
+    if (accommodationId == null) {
+      return accommodationServiceImpl.getAllAccommodations()
+          .stream()
+          .map(AccommodationDTO::new)
+          .collect(Collectors.toList());
+    } else {
+      return accommodationServiceImpl.getAccommodationById(accommodationId) != null ? List.of() : Collections.emptyList();
+    }
   }
 
   @PostMapping("/addAccommodation")
@@ -36,8 +39,8 @@ public class AccommodationController {
     return new AccommodationDTO(accommodationServiceImpl.saveAccommodation(accommodation));
   }
 
-  @DeleteMapping("/deleteAccommodationById/{id}")
-  public String deleteAccommodationById(@PathVariable("id") Long id) {
-    return accommodationServiceImpl.deleteAccommodationById(id);
+  @DeleteMapping("/deleteAccommodationById")
+  public String deleteAccommodationById(@RequestParam(name = "accommodationId") Long accommodationId) {
+    return accommodationServiceImpl.deleteAccommodationById(accommodationId);
   }
 }

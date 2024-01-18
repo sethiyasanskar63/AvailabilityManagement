@@ -21,22 +21,31 @@ public class AvailabilityDTO {
   private Date stayFromDate;
   private Date stayToDate;
   private int minNight;
-  private int maxNight;
   private List<Integer> arrivalDays;
   private List<Integer> departureDays;
-  private long accommodationTypeId;
-  private long accommodationId;
+  private Long accommodationTypeId;
+  private Long accommodationId;
 
   public AvailabilityDTO(Availability availability) {
     this.availabilityId = availability.getAvailabilityId();
     this.stayFromDate = availability.getStayFromDate();
     this.stayToDate = availability.getStayToDate();
     this.minNight = availability.getMinNight();
-    this.maxNight = availability.getMaxNight();
     this.arrivalDays = convertDaysStringToList(availability.getArrivalDays());
     this.departureDays = convertDaysStringToList(availability.getDepartureDays());
-    this.accommodationTypeId = availability.getAccommodationType().getAccommodationTypeId();
-    this.accommodationId = availability.getAccommodation().getAccommodationId();
+    this.accommodationTypeId = availability.getAccommodationType() == null ? null : availability.getAccommodationType().getAccommodationTypeId();
+    this.accommodationId = availability.getAccommodation() == null ? null : availability.getAccommodation().getAccommodationId();
+  }
+
+  public AvailabilityDTO(Long availabilityId, Date stayFromDate, Date stayToDate, Integer minNight, String arrivalDays, String departureDays, Long accommodationTypeId, Long accommodationId) {
+    this.availabilityId = availabilityId;
+    this.stayFromDate = stayFromDate;
+    this.stayToDate = stayToDate;
+    this.minNight = minNight;
+    this.arrivalDays = convertDaysStringToList(arrivalDays);
+    this.departureDays = convertDaysStringToList(departureDays);
+    this.accommodationTypeId = accommodationTypeId;
+    this.accommodationId = accommodationId;
   }
 
   public List<Integer> convertDaysStringToList(String daysString) {
