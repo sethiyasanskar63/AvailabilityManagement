@@ -53,8 +53,7 @@ public class AvailabilityController {
   }
 
   @DeleteMapping("/deleteAvailabilityById")
-  public String deleteAvailabilityById(@RequestParam(name = "availabilityId", required = false) Long availabilityId) {
+  public String deleteAvailabilityById(@RequestParam(name = "availabilityId") Long availabilityId) {
     return availabilityServiceImpl.deleteAvailabilityById(availabilityId);
   }
-
 }
