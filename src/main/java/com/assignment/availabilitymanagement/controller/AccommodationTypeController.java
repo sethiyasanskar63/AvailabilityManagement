@@ -19,13 +19,12 @@ public class AccommodationTypeController {
 
   @GetMapping("/getAccommodationTypes")
   public List<AccommodationTypeDTO> getAccommodationTypes(@RequestParam(name = "accommodationTypeId") Long accommodationTypeId) {
-    if (accommodationTypeId==null){
+    if (accommodationTypeId == null) {
       return accommodationTypeServiceImpl.getAllAccommodationTypes()
           .stream()
           .map(AccommodationTypeDTO::new)
           .collect(Collectors.toList());
-    }
-    else {
+    } else {
       return accommodationTypeServiceImpl.getAccommodationTypeById(accommodationTypeId) != null ? List.of() : Collections.emptyList();
     }
   }

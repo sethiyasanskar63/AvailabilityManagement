@@ -19,14 +19,13 @@ public class ResortController {
 
   @GetMapping("/getResorts")
   public List<ResortDTO> getResorts(@RequestParam(name = "resortId", required = false) Long resortId) {
-    if (resortId ==null){
+    if (resortId == null) {
       return resortServiceImpl.getAllResorts()
           .stream()
           .map(ResortDTO::new)
           .collect(Collectors.toList());
-    }
-    else{
-     return resortServiceImpl.getResortById(resortId) != null ? List.of() : Collections.emptyList();
+    } else {
+      return resortServiceImpl.getResortById(resortId) != null ? List.of() : Collections.emptyList();
     }
   }
 
@@ -41,7 +40,7 @@ public class ResortController {
   }
 
   @DeleteMapping("/deleteResortById")
-  public String deleteResortById(@RequestParam(name = "resortId", required = false) Long resortId) {
+  public String deleteResortById(@RequestParam(name = "resortId") Long resortId) {
     return resortServiceImpl.deleteResortByID(resortId);
   }
 }

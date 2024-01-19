@@ -5,7 +5,6 @@ import com.assignment.availabilitymanagement.repository.AvailabilityRepository;
 import com.assignment.availabilitymanagement.service.AvailabilityService;
 import com.assignment.availabilitymanagement.specification.AvailabilitySpecification;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -23,7 +22,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
                                             Date stayFromDate, Date stayToDate) {
 
 
-    AvailabilitySpecification availabilitySpecification = new AvailabilitySpecification(availabilityId,accommodationId,accommodationTypeId,minNights,arrivalDays,departureDays,stayFromDate,stayToDate);
+    AvailabilitySpecification availabilitySpecification = new AvailabilitySpecification(availabilityId, accommodationId, accommodationTypeId, minNights, arrivalDays, departureDays, stayFromDate, stayToDate);
     return availabilityRepository.findAll(availabilitySpecification);
   }
 
