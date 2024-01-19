@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,25 +21,19 @@ public class AvailabilityController {
 
   @GetMapping("/getAvailability")
   public List<AvailabilityDTO> getAvailability(
-      @RequestParam(name = "stayFromDate", required = false)
-      @DateTimeFormat(pattern = "yyyy-mm-dd") Date stayFromDate,
+      @RequestParam(name = "arrivalDate", required = false)
+      @DateTimeFormat(pattern = "yyyy-mm-dd") LocalDate arrivalDate,
 
-      @RequestParam(name = "stayToDate", required = false)
-      @DateTimeFormat(pattern = "yyyy-mm-dd") Date stayToDate,
+      @RequestParam(name = "departureDate", required = false)
+      @DateTimeFormat(pattern = "yyyy-mm-dd") LocalDate departureDate,
 
       @RequestParam(name = "availabilityId", required = false) Long availabilityId,
 
       @RequestParam(name = "accommodationId", required = false) Long accommodationId,
 
-      @RequestParam(name = "accommodationTypeId", required = false) Long accommodationTypeId,
-
-      @RequestParam(name = "minNights", required = false) Integer minNights,
-
-      @RequestParam(name = "arrivalDays", required = false) String arrivalDays,
-
-      @RequestParam(name = "departureDays", required = false) String departureDays
+      @RequestParam(name = "accommodationTypeId", required = false) Long accommodationTypeId
   ) {
-    return availabilityServiceImpl.getAvailability(availabilityId, accommodationId, accommodationTypeId, minNights, arrivalDays, departureDays, stayFromDate, stayToDate)
+    return availabilityServiceImpl.getAvailability(availabilityId, accommodationId, accommodationTypeId, arrivalDate, departureDate)
         .stream().map(AvailabilityDTO::new).collect(Collectors.toList());
   }
 

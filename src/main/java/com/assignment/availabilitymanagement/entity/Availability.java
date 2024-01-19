@@ -3,6 +3,7 @@ package com.assignment.availabilitymanagement.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.Objects;
 
@@ -19,13 +20,15 @@ public class Availability {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "availability_id")
-  private long availabilityId;
+  private Long availabilityId;
 
+  @Temporal(TemporalType.DATE)
   @Column(name = "stay_from_date")
-  private Date stayFromDate;
+  private LocalDate stayFromDate;
 
+  @Temporal(TemporalType.DATE)
   @Column(name = "stay_to_date")
-  private Date stayToDate;
+  private LocalDate stayToDate;
 
   @Column(name = "min_night")
   private int minNight;

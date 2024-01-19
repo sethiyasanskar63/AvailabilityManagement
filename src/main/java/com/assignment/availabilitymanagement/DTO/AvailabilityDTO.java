@@ -3,6 +3,7 @@ package com.assignment.availabilitymanagement.DTO;
 import com.assignment.availabilitymanagement.entity.Availability;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -18,8 +19,8 @@ import java.util.stream.Collectors;
 public class AvailabilityDTO {
 
   private long availabilityId;
-  private Date stayFromDate;
-  private Date stayToDate;
+  private LocalDate stayFromDate;
+  private LocalDate stayToDate;
   private int minNight;
   private List<Integer> arrivalDays;
   private List<Integer> departureDays;
@@ -37,7 +38,7 @@ public class AvailabilityDTO {
     this.accommodationId = availability.getAccommodation() == null ? null : availability.getAccommodation().getAccommodationId();
   }
 
-  public AvailabilityDTO(Long availabilityId, Date stayFromDate, Date stayToDate, Integer minNight, String arrivalDays, String departureDays, Long accommodationTypeId, Long accommodationId) {
+  public AvailabilityDTO(Long availabilityId, LocalDate stayFromDate, LocalDate stayToDate, Integer minNight, String arrivalDays, String departureDays, Long accommodationTypeId, Long accommodationId) {
     this.availabilityId = availabilityId;
     this.stayFromDate = stayFromDate;
     this.stayToDate = stayToDate;

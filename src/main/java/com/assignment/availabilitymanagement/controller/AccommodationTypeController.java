@@ -4,9 +4,12 @@ import com.assignment.availabilitymanagement.DTO.AccommodationTypeDTO;
 import com.assignment.availabilitymanagement.entity.AccommodationType;
 import com.assignment.availabilitymanagement.serviceImpl.AccommodationTypeServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
 
-import java.util.Collections;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,15 +21,22 @@ public class AccommodationTypeController {
   AccommodationTypeServiceImpl accommodationTypeServiceImpl;
 
   @GetMapping("/getAccommodationTypes")
-  public List<AccommodationTypeDTO> getAccommodationTypes(@RequestParam(name = "accommodationTypeId") Long accommodationTypeId) {
-    if (accommodationTypeId == null) {
-      return accommodationTypeServiceImpl.getAllAccommodationTypes()
-          .stream()
-          .map(AccommodationTypeDTO::new)
-          .collect(Collectors.toList());
-    } else {
-      return accommodationTypeServiceImpl.getAccommodationTypeById(accommodationTypeId) != null ? List.of() : Collections.emptyList();
+  public ResponseEntity<List<AccommodationTypeDTO>> getAccommodationTypes(
+      @RequestParam(name = "accommodationTypeId", required = false) Long accommodationTypeId,
+
+      @RequestParam(name = "arrivalDate", required = false)
+      @DateTimeFormat(pattern = "yyyy-mm-dd") LocalDate arrivalDate,
+
+      @RequestParam(name = "departureDate", required = false)
+      @DateTimeFormat(pattern = "yyyy-mm-dd") LocalDate departureDate
+  ) {
+
+    if ((arrivalDate == null && departureDate != null) || (arrivalDate != null && departureDate == null)) {
+      return ResponseEntity.badRequest().build();
     }
+
+    return ResponseEntity.ok(accommodationTypeServiceImpl.getAccommodationTypes(accommodationTypeId, arrivalDate, departureDate)
+        .stream().map(AccommodationTypeDTO::new).collect(Collectors.toList()));
   }
 
   @PostMapping("/addAccommodationType")
