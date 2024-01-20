@@ -2,13 +2,12 @@ package com.assignment.availabilitymanagement.service;
 
 import com.assignment.availabilitymanagement.entity.AccommodationType;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface AccommodationTypeService {
 
-  List<AccommodationType> getAllAccommodationTypes();
-
-  AccommodationType getAccommodationTypeById(Long id);
+  List<AccommodationType> getAccommodationTypes(Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate);
 
   AccommodationType saveAccommodationType(AccommodationType accommodationType);
 
