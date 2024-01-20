@@ -4,9 +4,11 @@ import com.assignment.availabilitymanagement.DTO.AccommodationDTO;
 import com.assignment.availabilitymanagement.entity.Accommodation;
 import com.assignment.availabilitymanagement.serviceImpl.AccommodationServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,15 +20,22 @@ public class AccommodationController {
   AccommodationServiceImpl accommodationServiceImpl;
 
   @GetMapping("/getAccommodations")
-  public List<AccommodationDTO> getAccommodations(@RequestParam(name = "accommodationId", required = false) Long accommodationId) {
-    if (accommodationId == null) {
-      return accommodationServiceImpl.getAllAccommodations()
-          .stream()
-          .map(AccommodationDTO::new)
-          .collect(Collectors.toList());
-    } else {
-      return accommodationServiceImpl.getAccommodationById(accommodationId) != null ? List.of() : Collections.emptyList();
+  public ResponseEntity<List<AccommodationDTO>> getAccommodations(
+      @RequestParam(name = "accommodationId", required = false) Long accommodationId,
+
+      @RequestParam(name = "arrivalDate", required = false)
+      @DateTimeFormat(pattern = "yyyy-mm-dd") LocalDate arrivalDate,
+
+      @RequestParam(name = "departureDate", required = false)
+      @DateTimeFormat(pattern = "yyyy-mm-dd") LocalDate departureDate
+  ) {
+
+    if ((arrivalDate == null && departureDate != null) || (arrivalDate != null && departureDate == null)) {
+      return ResponseEntity.badRequest().build();
     }
+
+    return ResponseEntity.ok(accommodationServiceImpl.getAccommodations(accommodationId, arrivalDate, departureDate)
+        .stream().map(AccommodationDTO::new).collect(Collectors.toList()));
   }
 
   @PostMapping("/addAccommodation")

@@ -4,6 +4,8 @@ import com.assignment.availabilitymanagement.entity.Availability;
 import com.assignment.availabilitymanagement.repository.AvailabilityRepository;
 import com.assignment.availabilitymanagement.service.AvailabilityService;
 import com.assignment.availabilitymanagement.specification.AvailabilitySpecification;
+import com.assignment.availabilitymanagement.util.ExcelToAvailability;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +29,13 @@ public class AvailabilityServiceImpl implements AvailabilityService {
   @Override
   public Availability saveAvailability(Availability availability) {
     return availabilityRepository.saveAndFlush(availability);
+  }
+
+  @Override
+  public String saveAllAvailabilityFromWorkbook(Workbook workbook) {
+    List<Availability> availabilities = new ExcelToAvailability().getExcelToAvailability(workbook);
+    availabilityRepository.saveAllAndFlush(availabilities);
+    return "Availabilities Imported";
   }
 
   @Override
