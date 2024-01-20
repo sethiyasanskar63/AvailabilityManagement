@@ -2,14 +2,13 @@ package com.assignment.availabilitymanagement.service;
 
 import com.assignment.availabilitymanagement.entity.Availability;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface AvailabilityService {
 
   List<Availability> getAvailability(Long availabilityId, Long accommodationId, Long accommodationTypeId,
-                                     Integer minNights, String arrivalDays, String departureDays,
-                                     Date stayFromDate, Date stayToDate);
+                                     LocalDate arrivalDate, LocalDate departureDate);
 
   Availability saveAvailability(Availability availability);
 
