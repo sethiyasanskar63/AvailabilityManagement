@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -20,7 +19,7 @@ public class AccommodationTypeServiceImpl implements AccommodationTypeService {
   @Override
   public List<AccommodationType> getAccommodationTypes(Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate) {
 
-    AccommodationTypeSpecification accommodationTypeSpecification = new AccommodationTypeSpecification(accommodationTypeId,arrivalDate,departureDate);
+    AccommodationTypeSpecification accommodationTypeSpecification = new AccommodationTypeSpecification(accommodationTypeId, arrivalDate, departureDate);
     return accommodationTypeRepository.findAll(accommodationTypeSpecification);
   }
 

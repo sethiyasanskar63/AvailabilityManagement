@@ -28,8 +28,8 @@ public class AccommodationSpecification implements Specification<Accommodation> 
 
     List<Predicate> predicates = new ArrayList<>();
 
-    if (accommodationId !=null){
-      predicates.add(criteriaBuilder.equal(root.get("accommodationId"),accommodationId));
+    if (accommodationId != null) {
+      predicates.add(criteriaBuilder.equal(root.get("accommodationId"), accommodationId));
     }
 
     if (arrivalDate != null && departureDate != null) {

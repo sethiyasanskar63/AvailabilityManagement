@@ -3,12 +3,22 @@ package com.assignment.availabilitymanagement.controller;
 import com.assignment.availabilitymanagement.DTO.AvailabilityDTO;
 import com.assignment.availabilitymanagement.entity.Availability;
 import com.assignment.availabilitymanagement.serviceImpl.AvailabilityServiceImpl;
+import com.assignment.availabilitymanagement.specification.AvailabilitySpecification;
+import com.assignment.availabilitymanagement.util.AvailabilityToExcel;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +26,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/availability")
 public class AvailabilityController {
 
+  private static final Logger logger = LoggerFactory.getLogger(AvailabilitySpecification.class);
   @Autowired
   private AvailabilityServiceImpl availabilityServiceImpl;
 
@@ -50,5 +61,33 @@ public class AvailabilityController {
   @DeleteMapping("/deleteAvailabilityById")
   public String deleteAvailabilityById(@RequestParam(name = "availabilityId") Long availabilityId) {
     return availabilityServiceImpl.deleteAvailabilityById(availabilityId);
+  }
+
+  @GetMapping(path = "/downloadAvailability")
+  public ResponseEntity<ByteArrayResource> downloadAvailability(){
+    AvailabilityToExcel availabilityToExcel = new AvailabilityToExcel();
+    Workbook workbook = availabilityToExcel.getAvailabilityWorkBook(availabilityServiceImpl.getAvailability(null, null, null, null, null));
+
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    try {
+      workbook.write(outputStream);
+      workbook.close();
+    } catch (IOException e) {
+      logger.error("Error while processing workbook", e);
+    }
+
+    byte[] excelBytes = outputStream.toByteArray();
+    ByteArrayResource resource = new ByteArrayResource(excelBytes);
+
+    return ResponseEntity.ok()
+        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=availability.xlsx")
+        .contentLength(resource.contentLength())
+        .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
+        .body(resource);
+  }
+
+  @PostMapping("/uploadAvailability")
+  public String uploadAvailability(){
+    return "Availability Uploaded.";
   }
 }

@@ -12,12 +12,10 @@ import org.springframework.data.jpa.domain.Specification;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class AvailabilitySpecification implements Specification<Availability> {
 
-  private static final Logger logger = LoggerFactory.getLogger(AvailabilitySpecification.class);
   private final Long availabilityId;
   private final Long accommodationId;
   private final Long accommodationTypeId;
@@ -40,7 +38,6 @@ public class AvailabilitySpecification implements Specification<Availability> {
     if (arrivalDate != null && departureDate != null) {
       noOfDays = ChronoUnit.DAYS.between(arrivalDate, departureDate);
     }
-    logger.info(String.valueOf(noOfDays));
 
     if (availabilityId != null) {
       predicates.add(criteriaBuilder.equal(root.get("availabilityId"), availabilityId));

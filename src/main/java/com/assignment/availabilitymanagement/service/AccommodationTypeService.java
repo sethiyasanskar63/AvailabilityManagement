@@ -3,7 +3,6 @@ package com.assignment.availabilitymanagement.service;
 import com.assignment.availabilitymanagement.entity.AccommodationType;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 public interface AccommodationTypeService {
