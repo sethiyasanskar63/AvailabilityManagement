@@ -3,9 +3,11 @@ package com.assignment.availabilitymanagement.serviceImpl;
 import com.assignment.availabilitymanagement.entity.Accommodation;
 import com.assignment.availabilitymanagement.repository.AccommodationRepository;
 import com.assignment.availabilitymanagement.service.AccommodationService;
+import com.assignment.availabilitymanagement.specification.AccommodationSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -15,13 +17,10 @@ public class AccommodationServiceImpl implements AccommodationService {
   private AccommodationRepository accommodationRepository;
 
   @Override
-  public List<Accommodation> getAllAccommodations() {
-    return accommodationRepository.findAll();
-  }
+  public List<Accommodation> getAccommodations(Long accommodationId, LocalDate arrivalDate, LocalDate departureDate) {
 
-  @Override
-  public Accommodation getAccommodationById(Long id) {
-    return accommodationRepository.findById(id).orElse(null);
+    AccommodationSpecification accommodationSpecification = new AccommodationSpecification(accommodationId, arrivalDate, departureDate);
+    return accommodationRepository.findAll(accommodationSpecification);
   }
 
   @Override

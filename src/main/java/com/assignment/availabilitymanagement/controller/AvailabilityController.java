@@ -4,8 +4,8 @@ import com.assignment.availabilitymanagement.DTO.AvailabilityDTO;
 import com.assignment.availabilitymanagement.entity.Availability;
 import com.assignment.availabilitymanagement.serviceImpl.AvailabilityServiceImpl;
 import com.assignment.availabilitymanagement.specification.AvailabilitySpecification;
-import com.assignment.availabilitymanagement.util.AvailabilityToExcel;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +15,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -64,9 +67,8 @@ public class AvailabilityController {
   }
 
   @GetMapping(path = "/downloadAvailability")
-  public ResponseEntity<ByteArrayResource> downloadAvailability(){
-    AvailabilityToExcel availabilityToExcel = new AvailabilityToExcel();
-    Workbook workbook = availabilityToExcel.getAvailabilityWorkBook(availabilityServiceImpl.getAvailability(null, null, null, null, null));
+  public ResponseEntity<ByteArrayResource> downloadAvailability() {
+    Workbook workbook = availabilityServiceImpl.getAvailabilityWorkbook(availabilityServiceImpl.getAvailability(null, null, null, null, null));
 
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     try {
@@ -87,7 +89,22 @@ public class AvailabilityController {
   }
 
   @PostMapping("/uploadAvailability")
-  public String uploadAvailability(){
-    return "Availability Uploaded.";
+  public String uploadAvailability(@RequestParam("file") MultipartFile file) throws IOException {
+    Workbook workbook = new XSSFWorkbook();
+
+    try (InputStream inputStream = file.getInputStream()) {
+      workbook = new XSSFWorkbook(inputStream);
+    }
+    return availabilityServiceImpl.saveAllAvailabilityFromWorkbook(workbook);
+  }
+
+  @GetMapping("/getPossibleDatesByAccommodationId")
+  public ResponseEntity<List<Map<String, Object>>> getPossibleDatesByAccommodationId(
+      @RequestParam(name = "accommodationTypeId") Long accommodationTypeId,
+
+      @RequestParam(name = "year") Integer year
+  ){
+
+    return ResponseEntity.ok(availabilityServiceImpl.getPossibleDatesByAccommodationId(accommodationTypeId,year));
   }
 }
