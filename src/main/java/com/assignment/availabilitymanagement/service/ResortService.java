@@ -6,9 +6,7 @@ import java.util.List;
 
 public interface ResortService {
 
-  List<Resort> getAllResorts();
-
-  Resort getResortById(Long id);
+  List<Resort> getResorts(Long resortId);
 
   Resort saveResort(Resort resort);
 

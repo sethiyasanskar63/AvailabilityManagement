@@ -3,6 +3,8 @@ package com.assignment.availabilitymanagement.controller;
 import com.assignment.availabilitymanagement.DTO.AccommodationTypeDTO;
 import com.assignment.availabilitymanagement.entity.AccommodationType;
 import com.assignment.availabilitymanagement.serviceImpl.AccommodationTypeServiceImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -16,40 +18,69 @@ import java.util.stream.Collectors;
 @RequestMapping("/accommodationType")
 public class AccommodationTypeController {
 
+  private static final Logger logger = LoggerFactory.getLogger(AccommodationTypeController.class);
+
   @Autowired
   AccommodationTypeServiceImpl accommodationTypeServiceImpl;
 
   @GetMapping("/getAccommodationTypes")
   public ResponseEntity<List<AccommodationTypeDTO>> getAccommodationTypes(
       @RequestParam(name = "accommodationTypeId", required = false) Long accommodationTypeId,
-
       @RequestParam(name = "arrivalDate", required = false)
-      @DateTimeFormat(pattern = "yyyy-mm-dd") LocalDate arrivalDate,
-
+      @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate arrivalDate,
       @RequestParam(name = "departureDate", required = false)
-      @DateTimeFormat(pattern = "yyyy-mm-dd") LocalDate departureDate
-  ) {
+      @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate departureDate) {
 
-    if ((arrivalDate == null && departureDate != null) || (arrivalDate != null && departureDate == null)) {
-      return ResponseEntity.badRequest().build();
+    try {
+      if ((arrivalDate == null && departureDate != null) || (arrivalDate != null && departureDate == null)) {
+        logger.warn("Invalid request parameters for getAccommodationTypes");
+        return ResponseEntity.badRequest().build();
+      }
+
+      List<AccommodationTypeDTO> accommodationTypes = accommodationTypeServiceImpl.getAccommodationTypes(accommodationTypeId, arrivalDate, departureDate)
+          .stream().map(AccommodationTypeDTO::new).collect(Collectors.toList());
+
+      logger.info("Successfully retrieved accommodation types");
+      return ResponseEntity.ok(accommodationTypes);
+    } catch (Exception e) {
+      logger.error("Error while processing getAccommodationTypes request", e);
+      return ResponseEntity.internalServerError().build();
     }
-
-    return ResponseEntity.ok(accommodationTypeServiceImpl.getAccommodationTypes(accommodationTypeId, arrivalDate, departureDate)
-        .stream().map(AccommodationTypeDTO::new).collect(Collectors.toList()));
   }
 
   @PostMapping("/addAccommodationType")
-  public AccommodationTypeDTO addAccommodationType(@RequestBody AccommodationType accommodationType) {
-    return new AccommodationTypeDTO(accommodationTypeServiceImpl.saveAccommodationType(accommodationType));
+  public ResponseEntity<AccommodationTypeDTO> addAccommodationType(@RequestBody AccommodationType accommodationType) {
+    try {
+      AccommodationTypeDTO addedAccommodationType = new AccommodationTypeDTO(accommodationTypeServiceImpl.saveAccommodationType(accommodationType));
+      logger.info("Successfully added accommodation type with ID: {}", addedAccommodationType.getAccommodationTypeId());
+      return ResponseEntity.ok(addedAccommodationType);
+    } catch (Exception e) {
+      logger.error("Error while processing addAccommodationType request", e);
+      return ResponseEntity.internalServerError().build();
+    }
   }
 
   @PutMapping("/updateAccommodationType")
-  public AccommodationTypeDTO updateAccommodationType(@RequestBody AccommodationType accommodationType) {
-    return new AccommodationTypeDTO(accommodationTypeServiceImpl.saveAccommodationType(accommodationType));
+  public ResponseEntity<AccommodationTypeDTO> updateAccommodationType(@RequestBody AccommodationType accommodationType) {
+    try {
+      AccommodationTypeDTO updatedAccommodationType = new AccommodationTypeDTO(accommodationTypeServiceImpl.saveAccommodationType(accommodationType));
+      logger.info("Successfully updated accommodation type with ID: {}", updatedAccommodationType.getAccommodationTypeId());
+      return ResponseEntity.ok(updatedAccommodationType);
+    } catch (Exception e) {
+      logger.error("Error while processing updateAccommodationType request", e);
+      return ResponseEntity.internalServerError().build();
+    }
   }
 
   @DeleteMapping("/deleteAccommodationTypeById")
-  public String deleteAccommodationTypeById(@RequestParam(name = "accommodationTypeId") Long accommodationTypeId) {
-    return accommodationTypeServiceImpl.deleteAccommodationTypeById(accommodationTypeId);
+  public ResponseEntity<String> deleteAccommodationTypeById(@RequestParam(name = "accommodationTypeId") Long accommodationTypeId) {
+    try {
+      String result = accommodationTypeServiceImpl.deleteAccommodationTypeById(accommodationTypeId);
+      logger.info("Successfully deleted accommodation type with ID: {}", accommodationTypeId);
+      return ResponseEntity.ok(result);
+    } catch (Exception e) {
+      logger.error("Error while processing deleteAccommodationTypeById request", e);
+      return ResponseEntity.internalServerError().build();
+    }
   }
 }

@@ -6,7 +6,6 @@ import lombok.*;
 import java.util.Objects;
 import java.util.Set;
 
-@Builder
 @Getter
 @Setter
 @ToString

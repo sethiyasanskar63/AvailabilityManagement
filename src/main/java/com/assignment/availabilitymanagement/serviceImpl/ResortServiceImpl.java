@@ -3,6 +3,7 @@ package com.assignment.availabilitymanagement.serviceImpl;
 import com.assignment.availabilitymanagement.entity.Resort;
 import com.assignment.availabilitymanagement.repository.ResortRepository;
 import com.assignment.availabilitymanagement.service.ResortService;
+import com.assignment.availabilitymanagement.specification.ResortSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,13 +16,10 @@ public class ResortServiceImpl implements ResortService {
   private ResortRepository resortRepository;
 
   @Override
-  public List<Resort> getAllResorts() {
-    return resortRepository.findAll();
-  }
+  public List<Resort> getResorts(Long resortId) {
 
-  @Override
-  public Resort getResortById(Long id) {
-    return resortRepository.findById(id).orElse(null);
+    ResortSpecification resortSpecification = new ResortSpecification(resortId);
+    return resortRepository.findAll(resortSpecification);
   }
 
   @Override

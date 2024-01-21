@@ -13,7 +13,7 @@ public interface AvailabilityService {
 
   Availability saveAvailability(Availability availability);
 
-  String saveAllAvailabilityFromWorkbook(Workbook workbook);
+  String saveAllAvailability(Workbook workbook);
 
   String deleteAvailabilityById(Long id);
 }
