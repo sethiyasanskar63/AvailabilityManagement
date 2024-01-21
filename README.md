@@ -11,9 +11,10 @@ The bungalows are grouped as per the number of adults who can stay in it. The re
 So, for example, there can be 30 bungalows of type “2 person bungalow”, 50 bungalows of type “4 person bungalow” and so on.
 For better management, maintenance and efficient utilization of resources and manpower, the property management team decides the periods for which bunglows can be booked. They make these decisions at bungalow type level.
 To give you an example, below is a configuration for 2 person bungalow:
-ID	STAY_DATE_FROM 	STAY_DATE_TO 	MIN_NIGHTS 	ARRIVAL_DAYS	DEPARTURE_DAYS	BUNGALOW_TYPE
-1	01 Apr 2024	30 Apr 2024	3	Mon, Fri	Mon, Fri	2 person bungalow
-2	01 Jun 2024	30 Jun 2024	7	All days	All days	2 person bungalow
+
+ID | STAY_DATE_FROM | STAY_DATE_TO | MIN_NIGHTS | ARRIVAL_DAYS | DEPARTURE_DAYS | BUNGALOW_TYPE
+1  | 01 Apr 2024    | 30 Apr 2024  | 3          | Mon, Fri     | Mon, Fri       | 2 person bungalow
+2  | 01 Jun 2024    | 30 Jun 2024  | 7          | All days     | All days       | 2 person bungalow
 
 ID : The identifier
 STAY_DATE_FROM / STAY_DATE_TO : The date range (period) in which the guest can arrive / depart.
@@ -26,9 +27,9 @@ The first record from the below table says that – for 2 person bungalow, the g
 
 The availability data can also be contiguous data. For example:
 
-ID	STAY_DATE_FROM 	STAY_DATE_TO 	MIN_NIGHTS 	ARRIVAL_DAYS	DEPARTURE_DAYS	BUNGALOW_TYPE
-1	  01 Apr 2024	    30 Apr 2024	  3          	Mon, Fri	     Mon, Fri	      2 person bungalow
-2	  01 May 2024	    31 May 2024	  7	          All days	     All days	      2 person bungalow
+ID | STAY_DATE_FROM | STAY_DATE_TO | MIN_NIGHTS | ARRIVAL_DAYS | DEPARTURE_DAYS | BUNGALOW_TYPE
+1  | 01 Apr 2024    | 30 Apr 2024  | 3          | Mon, Fri     | Mon, Fri       | 2 person bungalow
+2  | 01 Jun 2024    | 30 Jun 2024  | 7          | All days     | All days       | 2 person bungalow
 
 You can combine this availability data to decide when a guest can check-in and check-out. For example, here the guest can check-in on any Monday / Friday that falls between 1 Apr to 30 Apr, stay for 7 nights and check-out on any day between 1 May to 31 May.
 As a backend developer, your job is to design, develop and unit test the endpoints for managing these availability, for performing below actions:
