@@ -37,17 +37,6 @@ public class AvailabilityDTO {
     this.accommodationId = availability.getAccommodation() == null ? null : availability.getAccommodation().getAccommodationId();
   }
 
-  public AvailabilityDTO(Long availabilityId, LocalDate stayFromDate, LocalDate stayToDate, Integer minNight, String arrivalDays, String departureDays, Long accommodationTypeId, Long accommodationId) {
-    this.availabilityId = availabilityId;
-    this.stayFromDate = stayFromDate;
-    this.stayToDate = stayToDate;
-    this.minNight = minNight;
-    this.arrivalDays = convertDaysStringToList(arrivalDays);
-    this.departureDays = convertDaysStringToList(departureDays);
-    this.accommodationTypeId = accommodationTypeId;
-    this.accommodationId = accommodationId;
-  }
-
   public List<Integer> convertDaysStringToList(String daysString) {
     return Arrays.stream(daysString.split(","))
         .map(Integer::parseInt)

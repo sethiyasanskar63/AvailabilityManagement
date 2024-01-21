@@ -12,9 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 @Service
 public class AvailabilityServiceImpl implements AvailabilityService {
@@ -52,7 +52,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     return "Deleted availability with ID: " + id;
   }
 
-  public Workbook getAvailabilityWorkBook(List<Availability> availabilities) {
+  public Workbook getAvailabilityWorkbook(List<Availability> availabilities) {
     Workbook workbook = new XSSFWorkbook();
     Sheet sheet = workbook.createSheet("Availability");
     Row headerRow = sheet.createRow(0);
@@ -110,5 +110,64 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     availability.setDepartureDays(row.getCell(7).getStringCellValue());
 
     return availability;
+  }
+
+  public List<Map<String, Object>> getPossibleDatesByAccommodationId(Long accommodationTypeId, Integer year) {
+    List<Map<String, Object>> possibleDates = new ArrayList<>();
+    List<Availability> availabilities = getAvailability(null, null, accommodationTypeId, null, null);
+
+    for (LocalDate currentDate = LocalDate.of(year, 1, 1); !currentDate.isAfter(LocalDate.of(year, 12, 31)); currentDate = currentDate.plusDays(1)) {
+      if (isPossibleArrivalDate(currentDate, availabilities)) {
+        for (LocalDate departureDate = currentDate; !departureDate.isAfter(LocalDate.of(year, 12, 31)); departureDate = departureDate.plusDays(1)) {
+          if (isPossibleDepartureDate(departureDate, availabilities) && ChronoUnit.DAYS.between(currentDate, departureDate)>=3L) {
+            Map<String, Object> entry = new HashMap<>();
+            entry.put("AccommodationTypeId", availabilities.get(0).getAccommodationType().getAccommodationTypeId());
+            entry.put("ArrivalDate", currentDate.format(DateTimeFormatter.ISO_DATE));
+            entry.put("DepartureDate", departureDate.format(DateTimeFormatter.ISO_DATE));
+            possibleDates.add(entry);
+          }
+        }
+      }
+    }
+
+    return possibleDates;
+  }
+
+  private boolean isPossibleArrivalDate(LocalDate currentDate, List<Availability> availabilities) {
+    int dayOfWeek = currentDate.getDayOfWeek().getValue();
+
+    for (Availability availability : availabilities) {
+      LocalDate stayFromDate = availability.getStayFromDate();
+      LocalDate stayToDate = availability.getStayToDate();
+
+      if ((stayFromDate.isEqual(currentDate) || stayFromDate.isBefore(currentDate)) &&
+          (stayToDate.isEqual(currentDate) || stayToDate.isAfter(currentDate))) {
+
+        if (availability.getArrivalDays().contains(String.valueOf(dayOfWeek)) || availability.getArrivalDays().contains("8")) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  private boolean isPossibleDepartureDate(LocalDate departureDate, List<Availability> availabilities) {
+    int dayOfWeek = departureDate.getDayOfWeek().getValue();
+
+    for (Availability availability : availabilities) {
+      LocalDate stayFromDate = availability.getStayFromDate();
+      LocalDate stayToDate = availability.getStayToDate();
+
+      if ((stayFromDate.isEqual(departureDate) || stayFromDate.isBefore(departureDate)) &&
+          (stayToDate.isEqual(departureDate) || stayToDate.isAfter(departureDate))) {
+
+        if (availability.getDepartureDays().contains(String.valueOf(dayOfWeek)) || availability.getDepartureDays().contains("8")) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 }
