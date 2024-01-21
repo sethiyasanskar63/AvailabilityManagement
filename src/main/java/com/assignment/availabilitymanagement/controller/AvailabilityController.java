@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -67,7 +68,7 @@ public class AvailabilityController {
 
   @GetMapping(path = "/downloadAvailability")
   public ResponseEntity<ByteArrayResource> downloadAvailability() {
-    Workbook workbook = availabilityServiceImpl.getAvailabilityWorkBook(availabilityServiceImpl.getAvailability(null, null, null, null, null));
+    Workbook workbook = availabilityServiceImpl.getAvailabilityWorkbook(availabilityServiceImpl.getAvailability(null, null, null, null, null));
 
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     try {
@@ -95,5 +96,15 @@ public class AvailabilityController {
       workbook = new XSSFWorkbook(inputStream);
     }
     return availabilityServiceImpl.saveAllAvailabilityFromWorkbook(workbook);
+  }
+
+  @GetMapping("/getPossibleDatesByAccommodationId")
+  public ResponseEntity<List<Map<String, Object>>> getPossibleDatesByAccommodationId(
+      @RequestParam(name = "accommodationTypeId") Long accommodationTypeId,
+
+      @RequestParam(name = "year") Integer year
+  ){
+
+    return ResponseEntity.ok(availabilityServiceImpl.getPossibleDatesByAccommodationId(accommodationTypeId,year));
   }
 }
