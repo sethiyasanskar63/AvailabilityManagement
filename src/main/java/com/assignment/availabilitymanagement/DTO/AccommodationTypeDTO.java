@@ -1,13 +1,14 @@
 package com.assignment.availabilitymanagement.DTO;
 
 import com.assignment.availabilitymanagement.entity.AccommodationType;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-@Builder
 @Getter
 @Setter
 @ToString
-@AllArgsConstructor
 @NoArgsConstructor
 public class AccommodationTypeDTO {
 
