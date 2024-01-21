@@ -1,18 +1,19 @@
 package com.assignment.availabilitymanagement.DTO;
 
 import com.assignment.availabilitymanagement.entity.Availability;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Builder
 @Getter
 @Setter
 @ToString
-@AllArgsConstructor
 @NoArgsConstructor
 
 public class AvailabilityDTO {
