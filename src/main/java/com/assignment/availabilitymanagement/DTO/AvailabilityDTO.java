@@ -14,8 +14,6 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @ToString
-@NoArgsConstructor
-
 public class AvailabilityDTO {
 
   private long availabilityId;
