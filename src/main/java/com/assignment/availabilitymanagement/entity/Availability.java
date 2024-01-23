@@ -41,19 +41,30 @@ public class Availability {
   @JoinColumn(name = "accommodation_type_id")
   private AccommodationType accommodationType;
 
-  @ManyToOne
-  @JoinColumn(name = "accommodation_id")
-  private Accommodation accommodation;
 
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof Availability that)) return false;
-    return getAvailabilityId() == that.getAvailabilityId() && getMinNight() == that.getMinNight() && Objects.equals(getStayFromDate(), that.getStayFromDate()) && Objects.equals(getStayToDate(), that.getStayToDate()) && Objects.equals(getArrivalDays(), that.getArrivalDays()) && Objects.equals(getDepartureDays(), that.getDepartureDays()) && Objects.equals(getAccommodationType(), that.getAccommodationType()) && Objects.equals(getAccommodation(), that.getAccommodation());
+
+    if (getMinNight() != that.getMinNight()) return false;
+    if (!getAvailabilityId().equals(that.getAvailabilityId())) return false;
+    if (!getStayFromDate().equals(that.getStayFromDate())) return false;
+    if (!getStayToDate().equals(that.getStayToDate())) return false;
+    if (!getArrivalDays().equals(that.getArrivalDays())) return false;
+    if (!getDepartureDays().equals(that.getDepartureDays())) return false;
+    return getAccommodationType().equals(that.getAccommodationType());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getAvailabilityId(), getStayFromDate(), getStayToDate(), getMinNight(), getArrivalDays(), getDepartureDays(), getAccommodationType(), getAccommodation());
+    int result = getAvailabilityId().hashCode();
+    result = 31 * result + getStayFromDate().hashCode();
+    result = 31 * result + getStayToDate().hashCode();
+    result = 31 * result + getMinNight();
+    result = 31 * result + getArrivalDays().hashCode();
+    result = 31 * result + getDepartureDays().hashCode();
+    result = 31 * result + getAccommodationType().hashCode();
+    return result;
   }
 }

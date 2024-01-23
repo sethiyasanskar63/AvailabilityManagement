@@ -19,14 +19,12 @@ public class AvailabilitySpecification implements Specification<Availability> {
   private static final Logger logger = LoggerFactory.getLogger(AvailabilitySpecification.class);
 
   private final Long availabilityId;
-  private final Long accommodationId;
   private final Long accommodationTypeId;
   private final LocalDate arrivalDate;
   private final LocalDate departureDate;
 
-  public AvailabilitySpecification(Long availabilityId, Long accommodationId, Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate) {
+  public AvailabilitySpecification(Long availabilityId, Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate) {
     this.availabilityId = availabilityId;
-    this.accommodationId = accommodationId;
     this.accommodationTypeId = accommodationTypeId;
     this.arrivalDate = arrivalDate;
     this.departureDate = departureDate;
@@ -43,10 +41,6 @@ public class AvailabilitySpecification implements Specification<Availability> {
 
       if (availabilityId != null) {
         predicates.add(criteriaBuilder.equal(root.get("availabilityId"), availabilityId));
-      }
-
-      if (accommodationId != null) {
-        predicates.add(criteriaBuilder.equal(root.get("accommodation").get("accommodationId"), accommodationId));
       }
 
       if (accommodationTypeId != null) {
