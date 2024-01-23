@@ -51,7 +51,7 @@ class ResortServiceImplTest {
   @Test
   void saveResort_shouldReturnSavedResort() {
 
-    Resort resortToSave = new Resort(1,"Resort A", null);
+    Resort resortToSave = new Resort(1, "Resort A", null);
     Resort savedResort = new Resort(1L, "Resort A", null);
     Mockito.when(resortRepository.saveAndFlush(any(Resort.class))).thenReturn(savedResort);
     Resort result = resortService.saveResort(resortToSave);

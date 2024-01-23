@@ -1,10 +1,8 @@
 package com.assignment.availabilitymanagement.controller;
 
 import com.assignment.availabilitymanagement.DTO.AvailabilityDTO;
-import com.assignment.availabilitymanagement.entity.AccommodationType;
 import com.assignment.availabilitymanagement.entity.Availability;
 import com.assignment.availabilitymanagement.serviceImpl.AvailabilityServiceImpl;
-import com.assignment.availabilitymanagement.util.PossibleDates;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,9 +14,8 @@ import org.springframework.http.ResponseEntity;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 class AvailabilityControllerTest {

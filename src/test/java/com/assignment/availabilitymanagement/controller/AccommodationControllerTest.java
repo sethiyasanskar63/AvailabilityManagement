@@ -17,9 +17,9 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
 class AccommodationControllerTest {
 
@@ -69,7 +69,7 @@ class AccommodationControllerTest {
   @Test
   void addAccommodation_shouldReturnAddedAccommodation() {
 
-    Accommodation accommodationTest = new Accommodation(1,"Accommodation A", null, null);
+    Accommodation accommodationTest = new Accommodation(1, "Accommodation A", null, null);
     AccommodationDTO accommodationDTO = new AccommodationDTO(accommodationTest);
     Accommodation accommodation = new Accommodation(accommodationDTO.getAccommodationId(), accommodationDTO.getAccommodationName(), null, null);
     when(accommodationService.saveAccommodation(any(Accommodation.class))).thenReturn(accommodation);
@@ -82,7 +82,7 @@ class AccommodationControllerTest {
   @Test
   void addAccommodation_shouldReturnInternalServerErrorWhenServiceFails() {
 
-    Accommodation accommodation = new Accommodation(1,"Accommodation A", null, null);
+    Accommodation accommodation = new Accommodation(1, "Accommodation A", null, null);
     when(accommodationService.saveAccommodation(any(Accommodation.class))).thenThrow(new RuntimeException("Save failed"));
     ResponseEntity<AccommodationDTO> result = accommodationController.addAccommodation(accommodation);
 
@@ -92,7 +92,7 @@ class AccommodationControllerTest {
   @Test
   void updateAccommodation_shouldReturnUpdatedAccommodation() {
 
-    Accommodation accommodationTest = new Accommodation(1,"Accommodation A", null, null);
+    Accommodation accommodationTest = new Accommodation(1, "Accommodation A", null, null);
     AccommodationDTO accommodationDTO = new AccommodationDTO(accommodationTest);
     Accommodation accommodation = new Accommodation(accommodationDTO.getAccommodationId(), accommodationDTO.getAccommodationName(), null, null);
     when(accommodationService.saveAccommodation(any(Accommodation.class))).thenReturn(accommodation);
@@ -105,7 +105,7 @@ class AccommodationControllerTest {
   @Test
   void updateAccommodation_shouldReturnInternalServerErrorWhenServiceFails() {
 
-    Accommodation accommodation = new Accommodation(1,"Accommodation A", null, null);
+    Accommodation accommodation = new Accommodation(1, "Accommodation A", null, null);
     when(accommodationService.saveAccommodation(any(Accommodation.class))).thenThrow(new RuntimeException("Update failed"));
     ResponseEntity<AccommodationDTO> result = accommodationController.updateAccommodation(accommodation);
 
