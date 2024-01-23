@@ -29,21 +29,25 @@ public class AccommodationType {
 
   @OneToMany(mappedBy = "accommodationType")
   @ToString.Exclude
-  private Set<Accommodation> accommodations;
-
-  @OneToMany(mappedBy = "accommodationType")
-  @ToString.Exclude
   private Set<Availability> availabilities;
 
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof AccommodationType that)) return false;
-    return getAccommodationTypeId() == that.getAccommodationTypeId() && Objects.equals(getAccommodationTypeName(), that.getAccommodationTypeName()) && Objects.equals(getResort(), that.getResort()) && Objects.equals(getAccommodations(), that.getAccommodations()) && Objects.equals(getAvailabilities(), that.getAvailabilities());
+
+    if (getAccommodationTypeId() != that.getAccommodationTypeId()) return false;
+    if (!getAccommodationTypeName().equals(that.getAccommodationTypeName())) return false;
+    if (!getResort().equals(that.getResort())) return false;
+    return getAvailabilities().equals(that.getAvailabilities());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getAccommodationTypeId(), getAccommodationTypeName(), getResort(), getAccommodations(), getAvailabilities());
+    int result = (int) (getAccommodationTypeId() ^ (getAccommodationTypeId() >>> 32));
+    result = 31 * result + getAccommodationTypeName().hashCode();
+    result = 31 * result + getResort().hashCode();
+    result = 31 * result + getAvailabilities().hashCode();
+    return result;
   }
 }

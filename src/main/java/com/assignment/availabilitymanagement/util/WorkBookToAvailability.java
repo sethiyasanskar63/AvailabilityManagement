@@ -1,7 +1,6 @@
 package com.assignment.availabilitymanagement.util;
 
 import com.assignment.availabilitymanagement.entity.Availability;
-import com.assignment.availabilitymanagement.serviceImpl.AccommodationServiceImpl;
 import com.assignment.availabilitymanagement.serviceImpl.AccommodationTypeServiceImpl;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -21,8 +20,6 @@ public class WorkBookToAvailability {
 
   private static final Logger logger = LoggerFactory.getLogger(WorkBookToAvailability.class);
 
-  @Autowired
-  AccommodationServiceImpl accommodationServiceImpl;
   @Autowired
   AccommodationTypeServiceImpl accommodationTypeServiceImpl;
 
@@ -55,7 +52,6 @@ public class WorkBookToAvailability {
       Availability availability = new Availability();
 
       availability.setAvailabilityId((long) row.getCell(0).getNumericCellValue());
-      availability.setAccommodation(row.getCell(1).getNumericCellValue() == 0 ? null : accommodationServiceImpl.getAccommodations((long) row.getCell(1).getNumericCellValue(), null, null).get(0));
       availability.setAccommodationType(accommodationTypeServiceImpl.getAccommodationTypes((long) row.getCell(2).getNumericCellValue(), null, null).get(0));
       availability.setMinNight((int) row.getCell(3).getNumericCellValue());
       availability.setStayFromDate(LocalDate.from(row.getCell(4).getLocalDateTimeCellValue()));

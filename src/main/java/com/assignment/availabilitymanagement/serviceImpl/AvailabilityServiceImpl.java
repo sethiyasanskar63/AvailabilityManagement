@@ -30,7 +30,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
                                             LocalDate arrivalDate, LocalDate departureDate) {
 
     try {
-      AvailabilitySpecification availabilitySpecification = new AvailabilitySpecification(availabilityId, accommodationId, accommodationTypeId, arrivalDate, departureDate);
+      AvailabilitySpecification availabilitySpecification = new AvailabilitySpecification(availabilityId, accommodationId, arrivalDate, departureDate);
       return availabilityRepository.findAll(availabilitySpecification);
     } catch (Exception e) {
       logger.error("Error while getting availability", e);
