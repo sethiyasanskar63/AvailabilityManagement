@@ -17,7 +17,7 @@ public class AvailabilityToWorkbook {
     Sheet sheet = workbook.createSheet("Availability");
     Row headerRow = sheet.createRow(0);
 
-    String[] headers = {"Availability ID", "Accommodation ID", "Accommodation Type ID", "Minimum Nights", "Stay From Date", "Stay To Date", "Arrival Days", "Departure Days"};
+    String[] headers = {"Availability ID", "Accommodation Type ID", "Minimum Nights", "Stay From Date", "Stay To Date", "Arrival Days", "Departure Days"};
 
     for (int i = 0; i < headers.length; i++) {
       headerRow.createCell(i).setCellValue(headers[i]);
@@ -28,7 +28,6 @@ public class AvailabilityToWorkbook {
     for (Availability availability : availabilities) {
       Row row = sheet.createRow(rowNum++);
       row.createCell(0).setCellValue(availability.getAvailabilityId());
-      row.createCell(1).setCellValue(availability.getAccommodation() == null ? 0 : availability.getAccommodation().getAccommodationId());
       row.createCell(2).setCellValue(availability.getAccommodationType().getAccommodationTypeId());
       row.createCell(3).setCellValue(availability.getMinNight());
       row.createCell(4).setCellValue(availability.getStayFromDate());

@@ -22,7 +22,6 @@ public class AvailabilityDTO {
   private List<Integer> arrivalDays;
   private List<Integer> departureDays;
   private Long accommodationTypeId;
-  private Long accommodationId;
 
   public AvailabilityDTO(Availability availability) {
     this.availabilityId = availability.getAvailabilityId();
@@ -32,7 +31,6 @@ public class AvailabilityDTO {
     this.arrivalDays = convertDaysStringToList(availability.getArrivalDays());
     this.departureDays = convertDaysStringToList(availability.getDepartureDays());
     this.accommodationTypeId = availability.getAccommodationType() == null ? null : availability.getAccommodationType().getAccommodationTypeId();
-    this.accommodationId = availability.getAccommodation() == null ? null : availability.getAccommodation().getAccommodationId();
   }
 
   public List<Integer> convertDaysStringToList(String daysString) {
