@@ -2,7 +2,6 @@ package com.assignment.availabilitymanagement.DTO;
 
 import com.assignment.availabilitymanagement.entity.Availability;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 

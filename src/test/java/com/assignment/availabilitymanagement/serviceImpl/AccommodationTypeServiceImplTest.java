@@ -55,7 +55,7 @@ class AccommodationTypeServiceImplTest {
   @Test
   void saveAccommodationType_shouldReturnSavedAccommodationType() {
 
-    AccommodationType accommodationType = new AccommodationType(1,"Type A", null, null, null);
+    AccommodationType accommodationType = new AccommodationType(1, "Type A", null, null, null);
     when(accommodationTypeRepository.saveAndFlush(any(AccommodationType.class))).thenReturn(accommodationType);
     AccommodationType result = accommodationTypeService.saveAccommodationType(accommodationType);
 

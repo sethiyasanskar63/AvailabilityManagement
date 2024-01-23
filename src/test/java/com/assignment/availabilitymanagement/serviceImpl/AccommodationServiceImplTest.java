@@ -55,7 +55,7 @@ class AccommodationServiceImplTest {
   @Test
   void saveAccommodation_shouldReturnSavedAccommodation() {
 
-    Accommodation accommodationToSave = new Accommodation(1,"Accommodation A", null, null);
+    Accommodation accommodationToSave = new Accommodation(1, "Accommodation A", null, null);
     Accommodation savedAccommodation = new Accommodation(1L, "Accommodation A", null, null);
     Mockito.when(accommodationRepository.saveAndFlush(any(Accommodation.class))).thenReturn(savedAccommodation);
     Accommodation result = accommodationService.saveAccommodation(accommodationToSave);
@@ -78,7 +78,8 @@ class AccommodationServiceImplTest {
   void deleteAccommodationById_shouldThrowExceptionWhenRepositoryFails() {
 
     Long accommodationId = 1L;
-    Mockito.doThrow(new DataAccessException("Delete failed") {}).when(accommodationRepository).deleteById(accommodationId);
+    Mockito.doThrow(new DataAccessException("Delete failed") {
+    }).when(accommodationRepository).deleteById(accommodationId);
 
     assertThrows(DataAccessException.class, () -> accommodationService.deleteAccommodationById(accommodationId));
   }

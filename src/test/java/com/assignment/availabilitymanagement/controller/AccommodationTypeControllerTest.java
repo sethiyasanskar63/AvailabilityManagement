@@ -1,12 +1,6 @@
 package com.assignment.availabilitymanagement.controller;
 
 import com.assignment.availabilitymanagement.DTO.AccommodationTypeDTO;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.assignment.availabilitymanagement.entity.AccommodationType;
 import com.assignment.availabilitymanagement.service.AccommodationTypeService;
 import org.junit.jupiter.api.AfterEach;
@@ -23,8 +17,9 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
 class AccommodationTypeControllerTest {
 
@@ -63,7 +58,7 @@ class AccommodationTypeControllerTest {
   @Test
   void addAccommodationType_shouldReturnAddedAccommodationType() {
 
-    AccommodationType accommodationType = new AccommodationType(1,"Type A", null, null, null);
+    AccommodationType accommodationType = new AccommodationType(1, "Type A", null, null, null);
     when(accommodationTypeService.saveAccommodationType(any(AccommodationType.class))).thenReturn(accommodationType);
     AccommodationTypeDTO expectedAddedAccommodationType = new AccommodationTypeDTO(accommodationType);
     ResponseEntity<AccommodationTypeDTO> result = accommodationTypeController.addAccommodationType(accommodationType);
