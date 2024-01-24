@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface AvailabilityService {
 
-  List<Availability> getAvailability(Long availabilityId, Long accommodationId, Long accommodationTypeId,
+  List<Availability> getAvailability(Long availabilityId, Long accommodationTypeId,
                                      LocalDate arrivalDate, LocalDate departureDate);
 
   void saveAvailabilityFromDTO(AvailabilityDTO availabilityDTO);

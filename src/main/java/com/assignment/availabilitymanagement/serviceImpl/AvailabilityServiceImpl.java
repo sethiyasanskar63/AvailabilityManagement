@@ -29,11 +29,11 @@ public class AvailabilityServiceImpl implements AvailabilityService {
   private WorkBookToAvailability workBookToAvailability;
 
   @Override
-  public List<Availability> getAvailability(Long availabilityId, Long accommodationId, Long accommodationTypeId,
+  public List<Availability> getAvailability(Long availabilityId, Long accommodationTypeId,
                                             LocalDate arrivalDate, LocalDate departureDate) {
 
     try {
-      AvailabilitySpecification availabilitySpecification = new AvailabilitySpecification(availabilityId, accommodationId, arrivalDate, departureDate);
+      AvailabilitySpecification availabilitySpecification = new AvailabilitySpecification(availabilityId,accommodationTypeId, arrivalDate, departureDate);
       return availabilityRepository.findAll(availabilitySpecification);
     } catch (Exception e) {
       logger.error("Error while getting availability", e);
