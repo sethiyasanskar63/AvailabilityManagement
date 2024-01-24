@@ -1,5 +1,6 @@
 package com.assignment.availabilitymanagement.entity;
 
+import com.assignment.availabilitymanagement.DTO.AvailabilityDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,15 +33,14 @@ public class Availability {
   private int minNight;
 
   @Column(name = "arrival_days")
-  private String arrivalDays;
+  private Integer arrivalDays;
 
   @Column(name = "departure_days")
-  private String departureDays;
+  private Integer departureDays;
 
   @ManyToOne
   @JoinColumn(name = "accommodation_type_id")
   private AccommodationType accommodationType;
-
 
   @Override
   public boolean equals(Object o) {

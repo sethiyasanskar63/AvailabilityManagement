@@ -1,20 +1,18 @@
 package com.assignment.availabilitymanagement.util;
 
 import com.assignment.availabilitymanagement.entity.Availability;
+import com.assignment.availabilitymanagement.entity.DaysOfWeek;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class PossibleDates {
 
-  public static List<Map<String, Object>> getPossibleDatesByAccommodationTypeId(Long accommodationTypeId, Integer year, List<Availability> availabilities) {
+  public static List<Map<String, Object>> getPossibleDatesByAccommodationTypeId(Integer year, List<Availability> availabilities) {
     List<Map<String, Object>> possibleDates = new ArrayList<>();
 
     for (LocalDate currentDate = LocalDate.of(year, 1, 1); !currentDate.isAfter(LocalDate.of(year, 12, 31)); currentDate = currentDate.plusDays(1)) {
@@ -44,12 +42,11 @@ public class PossibleDates {
       if ((stayFromDate.isEqual(currentDate) || stayFromDate.isBefore(currentDate)) &&
           (stayToDate.isEqual(currentDate) || stayToDate.isAfter(currentDate))) {
 
-        if (availability.getArrivalDays().contains(String.valueOf(dayOfWeek)) || availability.getArrivalDays().contains("8")) {
+        if (Arrays.stream(DaysOfWeek.getSelectedDays(availability.getArrivalDays())).anyMatch(day -> day == dayOfWeek)) {
           return true;
         }
       }
     }
-
     return false;
   }
 
@@ -63,12 +60,11 @@ public class PossibleDates {
       if ((stayFromDate.isEqual(departureDate) || stayFromDate.isBefore(departureDate)) &&
           (stayToDate.isEqual(departureDate) || stayToDate.isAfter(departureDate))) {
 
-        if (availability.getDepartureDays().contains(String.valueOf(dayOfWeek)) || availability.getDepartureDays().contains("8")) {
+        if (Arrays.stream(DaysOfWeek.getSelectedDays(availability.getDepartureDays())).anyMatch(day -> day == dayOfWeek)) {
           return true;
         }
       }
     }
-
     return false;
   }
 }

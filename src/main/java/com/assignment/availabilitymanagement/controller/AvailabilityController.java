@@ -58,11 +58,11 @@ public class AvailabilityController {
   }
 
   @PostMapping("/addAvailability")
-  public ResponseEntity<AvailabilityDTO> addAvailability(@RequestBody Availability availability) {
+  public ResponseEntity<AvailabilityDTO> addAvailability(@RequestBody AvailabilityDTO availabilityDTO) {
     try {
-      AvailabilityDTO addedAvailability = new AvailabilityDTO(availabilityServiceImpl.saveAvailability(availability));
-      logger.info("Successfully added availability with ID: {}", addedAvailability.getAvailabilityId());
-      return ResponseEntity.ok(addedAvailability);
+      availabilityServiceImpl.saveAvailabilityFromDTO(availabilityDTO);
+      logger.info("Successfully added availability with ID: {}", availabilityDTO.getAvailabilityId());
+      return ResponseEntity.ok(availabilityDTO);
     } catch (Exception e) {
       logger.error("Error while processing addAvailability request", e);
       return ResponseEntity.internalServerError().build();
@@ -70,11 +70,11 @@ public class AvailabilityController {
   }
 
   @PutMapping("/updateAvailability")
-  public ResponseEntity<AvailabilityDTO> updateAvailability(@RequestBody Availability availability) {
+  public ResponseEntity<AvailabilityDTO> updateAvailability(@RequestBody AvailabilityDTO availabilityDTO) {
     try {
-      AvailabilityDTO updatedAvailability = new AvailabilityDTO(availabilityServiceImpl.saveAvailability(availability));
-      logger.info("Successfully updated availability with ID: {}", updatedAvailability.getAvailabilityId());
-      return ResponseEntity.ok(updatedAvailability);
+      availabilityServiceImpl.saveAvailabilityFromDTO(availabilityDTO);
+      logger.info("Successfully updated availability with ID: {}", availabilityDTO.getAvailabilityId());
+      return ResponseEntity.ok(availabilityDTO);
     } catch (Exception e) {
       logger.error("Error while processing updateAvailability request", e);
       return ResponseEntity.internalServerError().build();
@@ -142,7 +142,7 @@ public class AvailabilityController {
 
     try {
       List<Availability> availabilities = availabilityServiceImpl.getAvailability(null, null, accommodationTypeId, null, null);
-      List<Map<String, Object>> possibleDates = PossibleDates.getPossibleDatesByAccommodationTypeId(accommodationTypeId, year, availabilities);
+      List<Map<String, Object>> possibleDates = PossibleDates.getPossibleDatesByAccommodationTypeId(year, availabilities);
       logger.info("Successfully retrieved possible dates by accommodationId");
       return ResponseEntity.ok(possibleDates);
     } catch (Exception e) {
