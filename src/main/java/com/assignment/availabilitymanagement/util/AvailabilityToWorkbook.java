@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.StringJoiner;
 
 @Component
 public class AvailabilityToWorkbook {
@@ -41,7 +40,7 @@ public class AvailabilityToWorkbook {
     return workbook;
   }
 
-  public static String intArrayToString(int[] intArray){
+  public static String intArrayToString(int[] intArray) {
     return String.join(",", Arrays.stream(intArray).mapToObj(String::valueOf).toArray(String[]::new));
   }
 }

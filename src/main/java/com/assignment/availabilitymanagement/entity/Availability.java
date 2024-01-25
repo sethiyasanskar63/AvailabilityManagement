@@ -1,11 +1,9 @@
 package com.assignment.availabilitymanagement.entity;
 
-import com.assignment.availabilitymanagement.DTO.AvailabilityDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.Objects;
 
 @Getter
 @Setter
