@@ -42,11 +42,10 @@ public class AvailabilityController {
       @RequestParam(name = "departureDate", required = false)
       @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate departureDate,
       @RequestParam(name = "availabilityId", required = false) Long availabilityId,
-      @RequestParam(name = "accommodationId", required = false) Long accommodationId,
       @RequestParam(name = "accommodationTypeId", required = false) Long accommodationTypeId) {
 
     try {
-      List<AvailabilityDTO> availabilities = availabilityServiceImpl.getAvailability(availabilityId, accommodationId, accommodationTypeId, arrivalDate, departureDate)
+      List<AvailabilityDTO> availabilities = availabilityServiceImpl.getAvailability(availabilityId, accommodationTypeId, arrivalDate, departureDate)
           .stream().map(AvailabilityDTO::new).collect(Collectors.toList());
 
       logger.info("Successfully retrieved availability");
@@ -96,7 +95,7 @@ public class AvailabilityController {
   @GetMapping(path = "/downloadAvailability")
   public ResponseEntity<ByteArrayResource> downloadAvailability() {
     try {
-      Workbook workbook = AvailabilityToWorkbook.getAvailabilityWorkbook(availabilityServiceImpl.getAvailability(null, null, null, null, null));
+      Workbook workbook = AvailabilityToWorkbook.getAvailabilityWorkbook(availabilityServiceImpl.getAvailability(null, null, null, null));
 
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       workbook.write(outputStream);
@@ -141,12 +140,12 @@ public class AvailabilityController {
       @RequestParam(name = "year") Integer year) {
 
     try {
-      List<Availability> availabilities = availabilityServiceImpl.getAvailability(null, null, accommodationTypeId, null, null);
+      List<Availability> availabilities = availabilityServiceImpl.getAvailability(null, accommodationTypeId, null, null);
       List<Map<String, Object>> possibleDates = PossibleDates.getPossibleDatesByAccommodationTypeId(year, availabilities);
       logger.info("Successfully retrieved possible dates by accommodationId");
       return ResponseEntity.ok(possibleDates);
     } catch (Exception e) {
-      logger.error("Error while processing getPossibleDatesByAccommodationId request", e);
+      logger.error("Error while processing getPossibleDatesByAccommodationTypeId request", e);
       return ResponseEntity.internalServerError().build();
     }
   }
