@@ -34,19 +34,14 @@ public class PossibleDates {
   private static boolean isPossibleArrivalDate(LocalDate currentDate, List<Availability> availabilities) {
     int dayOfWeek = currentDate.getDayOfWeek().getValue();
 
-    // Check if currentDate falls within any availability period
     for (Availability availability : availabilities) {
       LocalDate stayFromDate = availability.getStayFromDate();
       LocalDate stayToDate = availability.getStayToDate();
 
       if ((stayFromDate.isEqual(currentDate) || stayFromDate.isBefore(currentDate)) && (stayToDate.isEqual(currentDate) || stayToDate.isAfter(currentDate))) {
-        if (Arrays.stream(DaysOfWeek.getSelectedDays(availability.getArrivalDays())).anyMatch(day -> day == dayOfWeek)) {
-          return true;  // Found a matching availability, no need for default
-        }
+        return Arrays.stream(DaysOfWeek.getSelectedDays(availability.getArrivalDays())).anyMatch(day -> day == dayOfWeek);  // Found a matching availability, no need for default
       }
     }
-
-    // If no availability found, consider default availability
     Availability defaultAvailability = createDefaultAvailability();
     return Arrays.stream(DaysOfWeek.getSelectedDays(defaultAvailability.getArrivalDays())).anyMatch(day -> day == dayOfWeek);
   }
@@ -54,19 +49,14 @@ public class PossibleDates {
   private static boolean isPossibleDepartureDate(LocalDate currentDate, LocalDate departureDate, List<Availability> availabilities) {
     int dayOfWeek = departureDate.getDayOfWeek().getValue();
 
-    // Check if departureDate falls within any availability period
     for (Availability availability : availabilities) {
       LocalDate stayFromDate = availability.getStayFromDate();
       LocalDate stayToDate = availability.getStayToDate();
 
       if ((stayFromDate.isEqual(departureDate) || stayFromDate.isBefore(departureDate)) && (stayToDate.isEqual(departureDate) || stayToDate.isAfter(departureDate))) {
-        if (Arrays.stream(DaysOfWeek.getSelectedDays(availability.getDepartureDays())).anyMatch(day -> day == dayOfWeek) && ChronoUnit.DAYS.between(currentDate, departureDate) >= availability.getMinNight() - 1) {
-          return true;  // Found a matching availability, no need for default
-        }
+        return Arrays.stream(DaysOfWeek.getSelectedDays(availability.getDepartureDays())).anyMatch(day -> day == dayOfWeek) && ChronoUnit.DAYS.between(currentDate, departureDate) >= availability.getMinNight() - 1;  // Found a matching availability, no need for default
       }
     }
-
-    // If no availability found, consider default availability
     Availability defaultAvailability = createDefaultAvailability();
     return Arrays.stream(DaysOfWeek.getSelectedDays(defaultAvailability.getDepartureDays())).anyMatch(day -> day == dayOfWeek) && ChronoUnit.DAYS.between(currentDate, departureDate) >= defaultAvailability.getMinNight() - 1;
   }
