@@ -1,13 +1,16 @@
 package com.assignment.availabilitymanagement.util;
 
 import com.assignment.availabilitymanagement.entity.Availability;
+import com.assignment.availabilitymanagement.entity.DaysOfWeek;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.StringJoiner;
 
 @Component
 public class AvailabilityToWorkbook {
@@ -28,13 +31,17 @@ public class AvailabilityToWorkbook {
     for (Availability availability : availabilities) {
       Row row = sheet.createRow(rowNum++);
       row.createCell(0).setCellValue(availability.getAvailabilityId());
-      row.createCell(2).setCellValue(availability.getAccommodationType().getAccommodationTypeId());
-      row.createCell(3).setCellValue(availability.getMinNight());
-      row.createCell(4).setCellValue(availability.getStayFromDate());
-      row.createCell(5).setCellValue(availability.getStayToDate());
-      row.createCell(6).setCellValue(availability.getArrivalDays());
-      row.createCell(7).setCellValue(availability.getDepartureDays());
+      row.createCell(1).setCellValue(availability.getAccommodationType().getAccommodationTypeId());
+      row.createCell(2).setCellValue(availability.getMinNight());
+      row.createCell(3).setCellValue(availability.getStayFromDate());
+      row.createCell(4).setCellValue(availability.getStayToDate());
+      row.createCell(5).setCellValue(intArrayToString(DaysOfWeek.getSelectedDays(availability.getArrivalDays())));
+      row.createCell(6).setCellValue(intArrayToString(DaysOfWeek.getSelectedDays(availability.getDepartureDays())));
     }
     return workbook;
+  }
+
+  public static String intArrayToString(int[] intArray){
+    return String.join(",", Arrays.stream(intArray).mapToObj(String::valueOf).toArray(String[]::new));
   }
 }

@@ -1,6 +1,7 @@
 package com.assignment.availabilitymanagement.DTO;
 
 import com.assignment.availabilitymanagement.entity.Availability;
+import com.assignment.availabilitymanagement.entity.DaysOfWeek;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -19,8 +20,8 @@ public class AvailabilityDTO {
   private LocalDate stayFromDate;
   private LocalDate stayToDate;
   private int minNight;
-  private List<Integer> arrivalDays;
-  private List<Integer> departureDays;
+  private int[] arrivalDays;
+  private int[] departureDays;
   private Long accommodationTypeId;
 
   public AvailabilityDTO(Availability availability) {
@@ -28,14 +29,8 @@ public class AvailabilityDTO {
     this.stayFromDate = availability.getStayFromDate();
     this.stayToDate = availability.getStayToDate();
     this.minNight = availability.getMinNight();
-    this.arrivalDays = convertDaysStringToList(availability.getArrivalDays());
-    this.departureDays = convertDaysStringToList(availability.getDepartureDays());
-    this.accommodationTypeId = availability.getAccommodationType() == null ? null : availability.getAccommodationType().getAccommodationTypeId();
-  }
-
-  public List<Integer> convertDaysStringToList(String daysString) {
-    return Arrays.stream(daysString.split(","))
-        .map(Integer::parseInt)
-        .collect(Collectors.toList());
+    this.arrivalDays = DaysOfWeek.getSelectedDays(availability.getArrivalDays());
+    this.departureDays = DaysOfWeek.getSelectedDays(availability.getDepartureDays());
+    this.accommodationTypeId = availability.getAccommodationType().getAccommodationTypeId();
   }
 }

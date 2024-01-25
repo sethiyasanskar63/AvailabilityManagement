@@ -1,6 +1,8 @@
 package com.assignment.availabilitymanagement.serviceImpl;
 
+import com.assignment.availabilitymanagement.DTO.AvailabilityDTO;
 import com.assignment.availabilitymanagement.entity.Availability;
+import com.assignment.availabilitymanagement.entity.DaysOfWeek;
 import com.assignment.availabilitymanagement.repository.AvailabilityRepository;
 import com.assignment.availabilitymanagement.service.AvailabilityService;
 import com.assignment.availabilitymanagement.specification.AvailabilitySpecification;
@@ -20,17 +22,18 @@ public class AvailabilityServiceImpl implements AvailabilityService {
   private static final Logger logger = LoggerFactory.getLogger(AvailabilityServiceImpl.class);
 
   @Autowired
+  private AccommodationTypeServiceImpl accommodationTypeServiceImpl;
+  @Autowired
   private AvailabilityRepository availabilityRepository;
-
   @Autowired
   private WorkBookToAvailability workBookToAvailability;
 
   @Override
-  public List<Availability> getAvailability(Long availabilityId, Long accommodationId, Long accommodationTypeId,
+  public List<Availability> getAvailability(Long availabilityId, Long accommodationTypeId,
                                             LocalDate arrivalDate, LocalDate departureDate) {
 
     try {
-      AvailabilitySpecification availabilitySpecification = new AvailabilitySpecification(availabilityId, accommodationId, arrivalDate, departureDate);
+      AvailabilitySpecification availabilitySpecification = new AvailabilitySpecification(availabilityId,accommodationTypeId, arrivalDate, departureDate);
       return availabilityRepository.findAll(availabilitySpecification);
     } catch (Exception e) {
       logger.error("Error while getting availability", e);
@@ -39,9 +42,19 @@ public class AvailabilityServiceImpl implements AvailabilityService {
   }
 
   @Override
-  public Availability saveAvailability(Availability availability) {
+  public void saveAvailabilityFromDTO(AvailabilityDTO availabilityDTO) {
+    Availability availability = new Availability(
+        availabilityDTO.getAvailabilityId(),
+        availabilityDTO.getStayFromDate(),
+        availabilityDTO.getStayToDate(),
+        availabilityDTO.getMinNight(),
+        DaysOfWeek.setDays(availabilityDTO.getArrivalDays()),
+        DaysOfWeek.setDays(availabilityDTO.getDepartureDays()),
+        accommodationTypeServiceImpl.getAccommodationTypes(availabilityDTO.getAccommodationTypeId(),null,null).get(0)
+        );
+
     try {
-      return availabilityRepository.saveAndFlush(availability);
+      availabilityRepository.saveAndFlush(availability);
     } catch (Exception e) {
       logger.error("Error while saving availability", e);
       throw new RuntimeException("Error while saving availability", e);
