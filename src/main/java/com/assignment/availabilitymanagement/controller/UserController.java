@@ -36,7 +36,7 @@ public class UserController {
   private JwtService jwtService;
 
   @PostMapping("/addUser")
-  @PreAuthorize("hasAnyAuthority('ADMIN_ROLES')")
+  @PreAuthorize("hasAnyAuthority('ADMIN_ROLE')")
   public ResponseEntity<String> addUser(@RequestBody UserInfo userInfo) {
     try {
       String response = userService.addUser(userInfo);
