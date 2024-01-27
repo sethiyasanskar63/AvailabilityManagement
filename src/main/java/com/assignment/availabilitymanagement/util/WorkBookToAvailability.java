@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class WorkBookToAvailability {
@@ -69,7 +68,7 @@ public class WorkBookToAvailability {
     }
   }
 
-  private Integer StringToBitMask(String daysString){
+  private Integer StringToBitMask(String daysString) {
     int[] days = Arrays.stream(daysString.split(","))
         .map(String::trim)
         .mapToInt(Integer::parseInt)

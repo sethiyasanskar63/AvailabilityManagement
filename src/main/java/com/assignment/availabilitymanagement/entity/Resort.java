@@ -1,14 +1,14 @@
 package com.assignment.availabilitymanagement.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-import java.util.Objects;
 import java.util.Set;
 
-@Getter
-@Setter
-@ToString
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -26,16 +26,4 @@ public class Resort {
   @OneToMany(mappedBy = "resort")
   @ToString.Exclude
   private Set<AccommodationType> accommodationTypes;
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof Resort resort)) return false;
-    return getResortId() == resort.getResortId() && Objects.equals(getResortName(), resort.getResortName()) && Objects.equals(getAccommodationTypes(), resort.getAccommodationTypes());
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(getResortId(), getResortName(), getAccommodationTypes());
-  }
 }
