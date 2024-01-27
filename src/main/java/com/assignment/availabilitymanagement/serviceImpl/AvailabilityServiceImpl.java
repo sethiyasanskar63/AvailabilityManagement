@@ -33,7 +33,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
                                             LocalDate arrivalDate, LocalDate departureDate) {
 
     try {
-      AvailabilitySpecification availabilitySpecification = new AvailabilitySpecification(availabilityId,accommodationTypeId, arrivalDate, departureDate);
+      AvailabilitySpecification availabilitySpecification = new AvailabilitySpecification(availabilityId, accommodationTypeId, arrivalDate, departureDate);
       return availabilityRepository.findAll(availabilitySpecification);
     } catch (Exception e) {
       logger.error("Error while getting availability", e);
@@ -50,8 +50,8 @@ public class AvailabilityServiceImpl implements AvailabilityService {
         availabilityDTO.getMinNight(),
         DaysOfWeek.setDays(availabilityDTO.getArrivalDays()),
         DaysOfWeek.setDays(availabilityDTO.getDepartureDays()),
-        accommodationTypeServiceImpl.getAccommodationTypes(availabilityDTO.getAccommodationTypeId(),null,null).get(0)
-        );
+        accommodationTypeServiceImpl.getAccommodationTypes(availabilityDTO.getAccommodationTypeId(), null, null).get(0)
+    );
 
     try {
       availabilityRepository.saveAndFlush(availability);
