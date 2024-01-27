@@ -1,5 +1,7 @@
-package com.assignment.availabilitymanagement.security;
+package com.assignment.availabilitymanagement.config;
 
+import com.assignment.availabilitymanagement.security.JwtFilter;
+import com.assignment.availabilitymanagement.security.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,19 +27,20 @@ public class SecurityConfig {
 
   @Autowired
   private JwtFilter jwtFilter;
+
   @Bean
-  public UserDetailsService userDetailsService(){
+  public UserDetailsService userDetailsService() {
     return new UserService();
   }
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
     return httpSecurity.csrf(AbstractHttpConfigurer::disable)
-        .authorizeHttpRequests(auth->auth
+        .authorizeHttpRequests(auth -> auth
             .requestMatchers("/auth/login")
             .permitAll()
             .anyRequest().authenticated())
-        .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authenticationProvider(authenticationProvider())
         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
         .build();

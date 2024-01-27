@@ -10,17 +10,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class UserDetails implements org.springframework.security.core.userdetails.UserDetails {
-  String userName=null;
+  String userName = null;
   String password = null;
   List<GrantedAuthority> authorities;
 
-  public UserDetails(UserInfo user){
-    userName= user.getUsername();
-    password= user.getPassword();
-    authorities= Arrays.stream(user.getRoles().split(","))
+  public UserDetails(UserInfo user) {
+    userName = user.getUsername();
+    password = user.getPassword();
+    authorities = Arrays.stream(user.getRoles().split(","))
         .map(SimpleGrantedAuthority::new)
         .collect(Collectors.toList());
   }
+
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return authorities;

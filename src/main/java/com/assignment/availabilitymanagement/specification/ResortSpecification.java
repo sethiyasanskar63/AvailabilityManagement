@@ -22,7 +22,11 @@ public class ResortSpecification implements Specification<Resort> {
   @Override
   public Predicate toPredicate(Root<Resort> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
     try {
-      return criteriaBuilder.equal(root.get("resortId"), resortId);
+      if (resortId != null) {
+        return criteriaBuilder.equal(root.get("resortId"), resortId);
+      } else {
+        return criteriaBuilder.isTrue(criteriaBuilder.literal(true));
+      }
     } catch (Exception e) {
       logger.error("Error while building ResortSpecification predicate", e);
       throw e;
