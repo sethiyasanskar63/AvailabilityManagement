@@ -2,15 +2,15 @@ package com.assignment.availabilitymanagement.DTO;
 
 import com.assignment.availabilitymanagement.entity.Availability;
 import com.assignment.availabilitymanagement.entity.DaysOfWeek;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
-@Getter
-@Setter
-@ToString
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class AvailabilityDTO {
 
   private long availabilityId;

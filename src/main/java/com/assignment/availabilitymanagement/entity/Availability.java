@@ -1,7 +1,9 @@
 package com.assignment.availabilitymanagement.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
@@ -38,29 +40,4 @@ public class Availability {
   @JoinColumn(name = "accommodation_type_id")
   private AccommodationType accommodationType;
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof Availability that)) return false;
-
-    if (getMinNight() != that.getMinNight()) return false;
-    if (!getAvailabilityId().equals(that.getAvailabilityId())) return false;
-    if (!getStayFromDate().equals(that.getStayFromDate())) return false;
-    if (!getStayToDate().equals(that.getStayToDate())) return false;
-    if (!getArrivalDays().equals(that.getArrivalDays())) return false;
-    if (!getDepartureDays().equals(that.getDepartureDays())) return false;
-    return getAccommodationType().equals(that.getAccommodationType());
-  }
-
-  @Override
-  public int hashCode() {
-    int result = getAvailabilityId().hashCode();
-    result = 31 * result + getStayFromDate().hashCode();
-    result = 31 * result + getStayToDate().hashCode();
-    result = 31 * result + getMinNight();
-    result = 31 * result + getArrivalDays().hashCode();
-    result = 31 * result + getDepartureDays().hashCode();
-    result = 31 * result + getAccommodationType().hashCode();
-    return result;
-  }
 }

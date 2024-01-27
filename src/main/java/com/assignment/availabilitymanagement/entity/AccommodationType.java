@@ -1,7 +1,10 @@
 package com.assignment.availabilitymanagement.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.Set;
 
@@ -28,23 +31,4 @@ public class AccommodationType {
   @ToString.Exclude
   private Set<Availability> availabilities;
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof AccommodationType that)) return false;
-
-    if (getAccommodationTypeId() != that.getAccommodationTypeId()) return false;
-    if (!getAccommodationTypeName().equals(that.getAccommodationTypeName())) return false;
-    if (!getResort().equals(that.getResort())) return false;
-    return getAvailabilities().equals(that.getAvailabilities());
-  }
-
-  @Override
-  public int hashCode() {
-    int result = (int) (getAccommodationTypeId() ^ (getAccommodationTypeId() >>> 32));
-    result = 31 * result + getAccommodationTypeName().hashCode();
-    result = 31 * result + getResort().hashCode();
-    result = 31 * result + getAvailabilities().hashCode();
-    return result;
-  }
 }
