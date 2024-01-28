@@ -13,6 +13,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Service implementation for managing accommodation types.
+ * Author: Sanskar Sethiya
+ */
 @Service
 public class AccommodationTypeServiceImpl implements AccommodationTypeService {
 
@@ -21,6 +25,15 @@ public class AccommodationTypeServiceImpl implements AccommodationTypeService {
   @Autowired
   private AccommodationTypeRepository accommodationTypeRepository;
 
+  /**
+   * Get a list of accommodation types based on the provided parameters.
+   *
+   * @param accommodationTypeId ID of the accommodation type (can be null for all types)
+   * @param arrivalDate         Start date of the stay
+   * @param departureDate       End date of the stay
+   * @return List of accommodation types
+   * @throws DataAccessException if there is an error while fetching data from the database
+   */
   @Override
   public List<AccommodationType> getAccommodationTypes(Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate) {
     try {
@@ -32,6 +45,13 @@ public class AccommodationTypeServiceImpl implements AccommodationTypeService {
     }
   }
 
+  /**
+   * Save an accommodation type.
+   *
+   * @param accommodationType Accommodation type to be saved
+   * @return Saved accommodation type
+   * @throws DataAccessException if there is an error while saving data to the database
+   */
   @Override
   public AccommodationType saveAccommodationType(AccommodationType accommodationType) {
     try {
@@ -42,6 +62,13 @@ public class AccommodationTypeServiceImpl implements AccommodationTypeService {
     }
   }
 
+  /**
+   * Delete an accommodation type by its ID.
+   *
+   * @param id ID of the accommodation type to be deleted
+   * @return Result message indicating success or failure
+   * @throws DataAccessException if there is an error while deleting data from the database
+   */
   @Override
   public String deleteAccommodationTypeById(Long id) {
     try {

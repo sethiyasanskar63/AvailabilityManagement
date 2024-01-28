@@ -9,6 +9,10 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.Date;
 
+/**
+ * Entity class representing AuditLog.
+ * Author: Sanskar Sethiya
+ */
 @Data
 @Builder
 @AllArgsConstructor

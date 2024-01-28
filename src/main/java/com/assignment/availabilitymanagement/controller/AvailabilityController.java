@@ -26,6 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Controller class for managing Availability.
+ * Author: Sanskar Sethiya
+ */
 @RestController
 @RequestMapping("/availability")
 public class AvailabilityController {
@@ -35,6 +39,15 @@ public class AvailabilityController {
   @Autowired
   private AvailabilityServiceImpl availabilityServiceImpl;
 
+  /**
+   * Retrieves a list of Availability based on the provided parameters.
+   *
+   * @param arrivalDate         The arrival date (optional).
+   * @param departureDate       The departure date (optional).
+   * @param availabilityId      The ID of the Availability (optional).
+   * @param accommodationTypeId The ID of the Accommodation Type (optional).
+   * @return ResponseEntity with a list of AvailabilityDTO.
+   */
   @GetMapping("/getAvailability")
   public ResponseEntity<List<AvailabilityDTO>> getAvailability(
       @RequestParam(name = "arrivalDate", required = false)
@@ -56,6 +69,12 @@ public class AvailabilityController {
     }
   }
 
+  /**
+   * Adds a new Availability.
+   *
+   * @param availabilityDTO The AvailabilityDTO object to be added.
+   * @return ResponseEntity with the added AvailabilityDTO.
+   */
   @PostMapping("/addAvailability")
   public ResponseEntity<AvailabilityDTO> addAvailability(@RequestBody AvailabilityDTO availabilityDTO) {
     try {
@@ -68,6 +87,12 @@ public class AvailabilityController {
     }
   }
 
+  /**
+   * Updates an existing Availability.
+   *
+   * @param availabilityDTO The AvailabilityDTO object to be updated.
+   * @return ResponseEntity with the updated AvailabilityDTO.
+   */
   @PutMapping("/updateAvailability")
   public ResponseEntity<AvailabilityDTO> updateAvailability(@RequestBody AvailabilityDTO availabilityDTO) {
     try {
@@ -80,6 +105,12 @@ public class AvailabilityController {
     }
   }
 
+  /**
+   * Deletes an Availability by ID.
+   *
+   * @param availabilityId The ID of the Availability to be deleted.
+   * @return ResponseEntity with a success message.
+   */
   @DeleteMapping("/deleteAvailabilityById")
   public ResponseEntity<String> deleteAvailabilityById(@RequestParam(name = "availabilityId") Long availabilityId) {
     try {
@@ -92,6 +123,11 @@ public class AvailabilityController {
     }
   }
 
+  /**
+   * Downloads an Availability workbook.
+   *
+   * @return ResponseEntity with a ByteArrayResource containing the workbook.
+   */
   @GetMapping(path = "/downloadAvailability")
   public ResponseEntity<ByteArrayResource> downloadAvailability() {
     try {
@@ -116,6 +152,12 @@ public class AvailabilityController {
     }
   }
 
+  /**
+   * Uploads an Availability workbook.
+   *
+   * @param file The MultipartFile containing the workbook.
+   * @return ResponseEntity with a success message.
+   */
   @PostMapping("/uploadAvailability")
   public ResponseEntity<String> uploadAvailability(@RequestParam("file") MultipartFile file) {
     try {
@@ -134,6 +176,13 @@ public class AvailabilityController {
     }
   }
 
+  /**
+   * Retrieves possible dates for a given Accommodation Type and year.
+   *
+   * @param accommodationTypeId The ID of the Accommodation Type.
+   * @param year                The year for which to retrieve possible dates.
+   * @return ResponseEntity with a list of possible dates.
+   */
   @GetMapping("/getPossibleDatesByAccommodationTypeId")
   public ResponseEntity<List<Map<String, Object>>> getPossibleDatesByAccommodationTypeId(
       @RequestParam(name = "accommodationTypeId") Long accommodationTypeId,
@@ -142,7 +191,7 @@ public class AvailabilityController {
     try {
       List<Availability> availabilities = availabilityServiceImpl.getAvailability(null, accommodationTypeId, null, null);
       List<Map<String, Object>> possibleDates = PossibleDates.getPossibleDatesByAccommodationTypeId(year, availabilities);
-      logger.info("Successfully retrieved possible dates by accommodationId");
+      logger.info("Successfully retrieved possible dates by accommodationTypeId");
       return ResponseEntity.ok(possibleDates);
     } catch (Exception e) {
       logger.error("Error while processing getPossibleDatesByAccommodationTypeId request", e);

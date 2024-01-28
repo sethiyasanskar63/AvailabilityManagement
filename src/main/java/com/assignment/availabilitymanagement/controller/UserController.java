@@ -19,18 +19,31 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Controller class for handling user-related HTTP requests.
+ * Author: Sanskar Sethiya
+ */
 @RestController
 @RequestMapping("/auth")
 public class UserController {
 
   private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+
   @Autowired
   AuthenticationManager authenticationManager;
+
   @Autowired
   private UserService userService;
+
   @Autowired
   private JwtService jwtService;
 
+  /**
+   * Adds a new user.
+   *
+   * @param userInfo The UserInfo object containing user details.
+   * @return ResponseEntity containing a success message or an internal server error response.
+   */
   @PostMapping("/addUser")
   @PreAuthorize("hasAnyAuthority('ADMIN_ROLE')")
   public ResponseEntity<String> addUser(@RequestBody UserInfo userInfo) {
@@ -44,6 +57,12 @@ public class UserController {
     }
   }
 
+  /**
+   * Authenticates and logs in a user, generating a JWT token upon successful authentication.
+   *
+   * @param userDTO The UserDTO object containing username and password.
+   * @return ResponseEntity containing the JWT token or an unauthorized response for invalid credentials.
+   */
   @PostMapping("/login")
   public ResponseEntity<String> loginUser(@RequestBody UserDTO userDTO) {
     try {
