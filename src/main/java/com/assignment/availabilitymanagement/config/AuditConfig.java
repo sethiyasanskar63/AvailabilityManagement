@@ -7,25 +7,43 @@ import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 
+/**
+ * AOP Configuration for auditing method calls.
+ * Author: Sanskar Sethiya
+ */
 @Configuration
 @Aspect
 public class AuditConfig {
 
+  private static final Logger logger = LoggerFactory.getLogger(AuditConfig.class);
+
   @Autowired
   private AuditLogServiceImpl auditLogService;
 
+  /**
+   * Logs information after successful execution of service methods related to resorts, accommodation types,
+   * and availabilities.
+   *
+   * @param joinPoint The join point at which the advice is applied.
+   */
   @AfterReturning("execution(public * com.assignment.availabilitymanagement.serviceImpl.ResortServiceImpl.*(..))" +
       " || execution(public * com.assignment.availabilitymanagement.serviceImpl.AccommodationTypeServiceImpl.*(..))" +
       " || execution(public * com.assignment.availabilitymanagement.serviceImpl.AvailabilityServiceImpl.*(..))")
   public void logAfterReturning(JoinPoint joinPoint) {
-    auditLogService.addLogs(AuditLog.builder().creationDate(new Date())
-        .description(joinPoint.getTarget().getClass().getSimpleName() + " method called: " +
-            joinPoint.getSignature().getName() + " with arguments: " +
-            getMethodArguments(joinPoint.getArgs()))
-        .build());
+    try {
+      auditLogService.addLogs(AuditLog.builder().creationDate(new Date())
+          .description(joinPoint.getTarget().getClass().getSimpleName() + " method called: " +
+              joinPoint.getSignature().getName() + " with arguments: " +
+              getMethodArguments(joinPoint.getArgs()))
+          .build());
+    } catch (Exception e) {
+      logger.error("Error logging after method execution", e);
+    }
   }
 
   private String getMethodArguments(Object[] args) {

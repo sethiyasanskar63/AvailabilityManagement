@@ -8,6 +8,10 @@ import lombok.ToString;
 
 import java.util.Set;
 
+/**
+ * Entity class representing AccommodationType.
+ * Author: Sanskar Sethiya
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

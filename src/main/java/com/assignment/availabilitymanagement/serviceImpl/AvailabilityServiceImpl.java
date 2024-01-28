@@ -2,7 +2,7 @@ package com.assignment.availabilitymanagement.serviceImpl;
 
 import com.assignment.availabilitymanagement.DTO.AvailabilityDTO;
 import com.assignment.availabilitymanagement.entity.Availability;
-import com.assignment.availabilitymanagement.entity.DaysOfWeek;
+import com.assignment.availabilitymanagement.util.DaysOfWeek;
 import com.assignment.availabilitymanagement.repository.AvailabilityRepository;
 import com.assignment.availabilitymanagement.service.AvailabilityService;
 import com.assignment.availabilitymanagement.specification.AvailabilitySpecification;
@@ -16,6 +16,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Service implementation for managing availabilities.
+ * Author: Sanskar Sethiya
+ */
 @Service
 public class AvailabilityServiceImpl implements AvailabilityService {
 
@@ -23,15 +27,26 @@ public class AvailabilityServiceImpl implements AvailabilityService {
 
   @Autowired
   private AccommodationTypeServiceImpl accommodationTypeServiceImpl;
+
   @Autowired
   private AvailabilityRepository availabilityRepository;
+
   @Autowired
   private WorkBookToAvailability workBookToAvailability;
 
+  /**
+   * Get availabilities based on the specified parameters.
+   *
+   * @param availabilityId       ID of the availability
+   * @param accommodationTypeId  ID of the accommodation type
+   * @param arrivalDate          Arrival date
+   * @param departureDate        Departure date
+   * @return List of availabilities
+   * @throws RuntimeException if there is an error while fetching data from the database
+   */
   @Override
   public List<Availability> getAvailability(Long availabilityId, Long accommodationTypeId,
                                             LocalDate arrivalDate, LocalDate departureDate) {
-
     try {
       AvailabilitySpecification availabilitySpecification = new AvailabilitySpecification(availabilityId, accommodationTypeId, arrivalDate, departureDate);
       return availabilityRepository.findAll(availabilitySpecification);
@@ -41,6 +56,12 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     }
   }
 
+  /**
+   * Save availability from the provided DTO.
+   *
+   * @param availabilityDTO DTO containing availability information
+   * @throws RuntimeException if there is an error while saving data to the database
+   */
   @Override
   public void saveAvailabilityFromDTO(AvailabilityDTO availabilityDTO) {
     Availability availability = new Availability(
@@ -61,6 +82,13 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     }
   }
 
+  /**
+   * Save all availabilities from the provided workbook.
+   *
+   * @param workbook Workbook containing availability data
+   * @return Success message
+   * @throws RuntimeException if there is an error while saving data to the database
+   */
   @Override
   public String saveAllAvailability(Workbook workbook) {
     try {
@@ -73,6 +101,13 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     }
   }
 
+  /**
+   * Delete availability by ID.
+   *
+   * @param id ID of the availability to be deleted
+   * @return Success message
+   * @throws RuntimeException if there is an error while deleting data from the database
+   */
   @Override
   public String deleteAvailabilityById(Long id) {
     try {

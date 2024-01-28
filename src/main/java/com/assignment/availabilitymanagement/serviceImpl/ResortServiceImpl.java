@@ -11,6 +11,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * Service implementation for managing resorts.
+ * Author: Sanskar Sethiya
+ */
 @Service
 public class ResortServiceImpl implements ResortService {
 
@@ -19,6 +23,13 @@ public class ResortServiceImpl implements ResortService {
   @Autowired
   private ResortRepository resortRepository;
 
+  /**
+   * Get resorts based on the specified parameters.
+   *
+   * @param resortId ID of the resort
+   * @return List of resorts
+   * @throws RuntimeException if there is an error while fetching data from the database
+   */
   @Override
   public List<Resort> getResorts(Long resortId) {
     try {
@@ -30,6 +41,13 @@ public class ResortServiceImpl implements ResortService {
     }
   }
 
+  /**
+   * Save a resort.
+   *
+   * @param resort Resort to be saved
+   * @return Saved resort
+   * @throws RuntimeException if there is an error while saving data to the database
+   */
   @Override
   public Resort saveResort(Resort resort) {
     try {
@@ -40,6 +58,13 @@ public class ResortServiceImpl implements ResortService {
     }
   }
 
+  /**
+   * Delete resort by ID.
+   *
+   * @param id ID of the resort to be deleted
+   * @return Success message
+   * @throws RuntimeException if there is an error while deleting data from the database
+   */
   @Override
   public String deleteResortByID(Long id) {
     try {

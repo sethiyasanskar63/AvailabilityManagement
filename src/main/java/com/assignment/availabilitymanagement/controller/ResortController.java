@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Controller class for handling Resort-related HTTP requests.
+ * Author: Sanskar Sethiya
+ */
 @RestController
 @RequestMapping("/resort")
 public class ResortController {
@@ -21,6 +25,12 @@ public class ResortController {
   @Autowired
   ResortServiceImpl resortServiceImpl;
 
+  /**
+   * Retrieves a list of resorts based on optional parameters.
+   *
+   * @param resortId Optional parameter to filter resorts by ID.
+   * @return ResponseEntity containing a list of ResortDTOs or a bad request response.
+   */
   @GetMapping("/getResorts")
   public ResponseEntity<List<ResortDTO>> getResorts(@RequestParam(name = "resortId", required = false) Long resortId) {
     try {
@@ -34,6 +44,12 @@ public class ResortController {
     }
   }
 
+  /**
+   * Adds a new resort.
+   *
+   * @param resort The Resort object to be added.
+   * @return ResponseEntity containing the added ResortDTO or a bad request response.
+   */
   @PostMapping("/addResort")
   public ResponseEntity<ResortDTO> addResort(@RequestBody Resort resort) {
     try {
@@ -46,6 +62,12 @@ public class ResortController {
     }
   }
 
+  /**
+   * Updates an existing resort.
+   *
+   * @param resort The Resort object with updated information.
+   * @return ResponseEntity containing the updated ResortDTO or a bad request response.
+   */
   @PutMapping("/updateResort")
   public ResponseEntity<ResortDTO> updateResort(@RequestBody Resort resort) {
     try {
@@ -58,6 +80,12 @@ public class ResortController {
     }
   }
 
+  /**
+   * Deletes a resort based on its ID.
+   *
+   * @param resortId The ID of the resort to be deleted.
+   * @return ResponseEntity containing a success message or a bad request response.
+   */
   @DeleteMapping("/deleteResortById")
   public ResponseEntity<String> deleteResortById(@RequestParam(name = "resortId") Long resortId) {
     try {

@@ -13,6 +13,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Specification class for filtering AccommodationType entities.
+ * Author: Sanskar Sethiya
+ */
 public class AccommodationTypeSpecification implements Specification<AccommodationType> {
 
   private static final Logger logger = LoggerFactory.getLogger(AccommodationTypeSpecification.class);
@@ -21,12 +25,28 @@ public class AccommodationTypeSpecification implements Specification<Accommodati
   private final LocalDate arrivalDate;
   private final LocalDate departureDate;
 
+  /**
+   * Constructor for creating an AccommodationTypeSpecification.
+   *
+   * @param accommodationTypeId ID of the accommodation type
+   * @param arrivalDate         Arrival date for filtering
+   * @param departureDate       Departure date for filtering
+   */
   public AccommodationTypeSpecification(Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate) {
     this.accommodationTypeId = accommodationTypeId;
     this.arrivalDate = arrivalDate;
     this.departureDate = departureDate;
   }
 
+  /**
+   * Build the predicate based on the specified criteria.
+   *
+   * @param root             Root entity
+   * @param query            Criteria query
+   * @param criteriaBuilder Criteria builder
+   * @return Predicate representing the filtering criteria
+   * @throws RuntimeException if there is an error while building the predicate
+   */
   @Override
   public Predicate toPredicate(Root<AccommodationType> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
     try {
@@ -55,7 +75,7 @@ public class AccommodationTypeSpecification implements Specification<Accommodati
       return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
     } catch (Exception e) {
       logger.error("Error while building AccommodationTypeSpecification predicate", e);
-      throw e;
+      throw new RuntimeException("Error while building AccommodationTypeSpecification predicate", e);
     }
   }
 }
