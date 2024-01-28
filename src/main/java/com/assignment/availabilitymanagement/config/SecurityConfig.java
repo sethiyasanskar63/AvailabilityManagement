@@ -19,48 +19,110 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+/**
+ * Configuration class for security settings.
+ * Author: Sanskar Sethiya
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
+  private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+
   @Autowired
   private JwtFilter jwtFilter;
 
-  @Bean
-  public UserDetailsService userDetailsService() {
-    return new UserService();
-  }
-
+  /**
+   * Configures security settings and filters.
+   *
+   * @param httpSecurity The HttpSecurity object to configure security.
+   * @return The configured SecurityFilterChain.
+   * @throws Exception If an error occurs during configuration.
+   */
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-    return httpSecurity.csrf(AbstractHttpConfigurer::disable)
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/auth/login", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")
-            .permitAll()
-            .anyRequest().authenticated())
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authenticationProvider(authenticationProvider())
-        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-        .build();
+    try {
+      return httpSecurity.csrf(AbstractHttpConfigurer::disable)
+          .authorizeHttpRequests(auth -> auth
+              .requestMatchers("/auth/login", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**","/error")
+              .permitAll()
+              .anyRequest().authenticated())
+          .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+          .authenticationProvider(authenticationProvider())
+          .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+          .build();
+    } catch (Exception e) {
+      logger.error("Error configuring security filter chain", e);
+      throw e;
+    }
   }
 
+  /**
+   * Configures the AuthenticationProvider for DaoAuthentication.
+   *
+   * @return The configured AuthenticationProvider.
+   */
   @Bean
   public AuthenticationProvider authenticationProvider() {
-    DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-    authenticationProvider.setUserDetailsService(userDetailsService());
-    authenticationProvider.setPasswordEncoder(passwordEncoder());
-    return authenticationProvider;
+    try {
+      DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+      authenticationProvider.setUserDetailsService(userDetailsService());
+      authenticationProvider.setPasswordEncoder(passwordEncoder());
+      return authenticationProvider;
+    } catch (Exception e) {
+      logger.error("Error configuring authentication provider", e);
+      throw e;
+    }
   }
 
+  /**
+   * Configures the UserDetailsService bean.
+   *
+   * @return The configured UserDetailsService.
+   */
+  @Bean
+  public UserDetailsService userDetailsService() {
+    try {
+      return new UserService();
+    } catch (Exception e) {
+      logger.error("Error configuring user details service", e);
+      throw e;
+    }
+  }
+
+  /**
+   * Configures the PasswordEncoder bean for password hashing.
+   *
+   * @return The configured PasswordEncoder.
+   */
   @Bean
   public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
+    try {
+      return new BCryptPasswordEncoder();
+    } catch (Exception e) {
+      logger.error("Error configuring password encoder", e);
+      throw e;
+    }
   }
 
+  /**
+   * Configures the AuthenticationManager bean.
+   *
+   * @param config The AuthenticationConfiguration object.
+   * @return The configured AuthenticationManager.
+   * @throws Exception If an error occurs during configuration.
+   */
   @Bean
   public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-    return config.getAuthenticationManager();
+    try {
+      return config.getAuthenticationManager();
+    } catch (Exception e) {
+      logger.error("Error configuring authentication manager", e);
+      throw e;
+    }
   }
 }

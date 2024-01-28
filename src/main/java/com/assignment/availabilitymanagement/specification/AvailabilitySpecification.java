@@ -14,6 +14,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Specification class for filtering Availability entities.
+ * Author: Sanskar Sethiya
+ */
 public class AvailabilitySpecification implements Specification<Availability> {
 
   private static final Logger logger = LoggerFactory.getLogger(AvailabilitySpecification.class);
@@ -23,6 +27,14 @@ public class AvailabilitySpecification implements Specification<Availability> {
   private final LocalDate arrivalDate;
   private final LocalDate departureDate;
 
+  /**
+   * Constructor for creating an AvailabilitySpecification.
+   *
+   * @param availabilityId      ID of the availability
+   * @param accommodationTypeId ID of the accommodation type for filtering
+   * @param arrivalDate         Arrival date for filtering
+   * @param departureDate       Departure date for filtering
+   */
   public AvailabilitySpecification(Long availabilityId, Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate) {
     this.availabilityId = availabilityId;
     this.accommodationTypeId = accommodationTypeId;
@@ -30,6 +42,15 @@ public class AvailabilitySpecification implements Specification<Availability> {
     this.departureDate = departureDate;
   }
 
+  /**
+   * Build the predicate based on the specified criteria.
+   *
+   * @param root             Root entity
+   * @param query            Criteria query
+   * @param criteriaBuilder Criteria builder
+   * @return Predicate representing the filtering criteria
+   * @throws RuntimeException if there is an error while building the predicate
+   */
   @Override
   public Predicate toPredicate(Root<Availability> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
     try {
@@ -64,7 +85,7 @@ public class AvailabilitySpecification implements Specification<Availability> {
       return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
     } catch (Exception e) {
       logger.error("Error while building AvailabilitySpecification predicate", e);
-      throw e;
+      throw new RuntimeException("Error while building AvailabilitySpecification predicate", e);
     }
   }
 }

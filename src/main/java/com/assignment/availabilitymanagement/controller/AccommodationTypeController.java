@@ -14,6 +14,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Controller class for managing Accommodation Types.
+ * Author: Sanskar Sethiya
+ */
 @RestController
 @RequestMapping("/accommodationType")
 public class AccommodationTypeController {
@@ -23,6 +27,14 @@ public class AccommodationTypeController {
   @Autowired
   AccommodationTypeServiceImpl accommodationTypeServiceImpl;
 
+  /**
+   * Retrieves a list of Accommodation Types based on the provided parameters.
+   *
+   * @param accommodationTypeId The ID of the Accommodation Type (optional).
+   * @param arrivalDate         The arrival date (optional).
+   * @param departureDate       The departure date (optional).
+   * @return ResponseEntity with a list of AccommodationTypeDTO.
+   */
   @GetMapping("/getAccommodationTypes")
   public ResponseEntity<List<AccommodationTypeDTO>> getAccommodationTypes(
       @RequestParam(name = "accommodationTypeId", required = false) Long accommodationTypeId,
@@ -48,6 +60,12 @@ public class AccommodationTypeController {
     }
   }
 
+  /**
+   * Adds a new Accommodation Type.
+   *
+   * @param accommodationType The Accommodation Type object to be added.
+   * @return ResponseEntity with the added AccommodationTypeDTO.
+   */
   @PostMapping("/addAccommodationType")
   public ResponseEntity<AccommodationTypeDTO> addAccommodationType(@RequestBody AccommodationType accommodationType) {
     try {
@@ -60,6 +78,12 @@ public class AccommodationTypeController {
     }
   }
 
+  /**
+   * Updates an existing Accommodation Type.
+   *
+   * @param accommodationType The Accommodation Type object to be updated.
+   * @return ResponseEntity with the updated AccommodationTypeDTO.
+   */
   @PutMapping("/updateAccommodationType")
   public ResponseEntity<AccommodationTypeDTO> updateAccommodationType(@RequestBody AccommodationType accommodationType) {
     try {
@@ -72,6 +96,12 @@ public class AccommodationTypeController {
     }
   }
 
+  /**
+   * Deletes an Accommodation Type by ID.
+   *
+   * @param accommodationTypeId The ID of the Accommodation Type to be deleted.
+   * @return ResponseEntity with a success message.
+   */
   @DeleteMapping("/deleteAccommodationTypeById")
   public ResponseEntity<String> deleteAccommodationTypeById(@RequestParam(name = "accommodationTypeId") Long accommodationTypeId) {
     try {

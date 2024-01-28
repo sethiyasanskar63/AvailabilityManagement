@@ -7,6 +7,10 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
+/**
+ * Entity class representing Availability.
+ * Author: Sanskar Sethiya
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -39,5 +43,4 @@ public class Availability {
   @ManyToOne
   @JoinColumn(name = "accommodation_type_id")
   private AccommodationType accommodationType;
-
 }
