@@ -1,8 +1,10 @@
 package com.assignment.availabilitymanagement.serviceImpl;
 
-import com.assignment.availabilitymanagement.DTO.AvailabilityDTO;
+import com.assignment.availabilitymanagement.dto.AvailabilityDTO;
+import com.assignment.availabilitymanagement.entity.AccommodationType;
 import com.assignment.availabilitymanagement.entity.Availability;
-import com.assignment.availabilitymanagement.util.DaysOfWeek;
+import com.assignment.availabilitymanagement.mapper.AvailabilityMapper;
+import com.assignment.availabilitymanagement.repository.AccommodationTypeRepository;
 import com.assignment.availabilitymanagement.repository.AvailabilityRepository;
 import com.assignment.availabilitymanagement.service.AvailabilityService;
 import com.assignment.availabilitymanagement.specification.AvailabilitySpecification;
@@ -11,14 +13,17 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * Service implementation for managing availabilities.
- * Author: Sanskar Sethiya
+ * Implements the service layer for managing availabilities, offering methods to fetch,
+ * save, and delete availabilities, as well as to import them from an Excel workbook.
  */
 @Service
 public class AvailabilityServiceImpl implements AvailabilityService {
@@ -26,96 +31,84 @@ public class AvailabilityServiceImpl implements AvailabilityService {
   private static final Logger logger = LoggerFactory.getLogger(AvailabilityServiceImpl.class);
 
   @Autowired
-  private AccommodationTypeServiceImpl accommodationTypeServiceImpl;
+  private AvailabilityRepository availabilityRepository;
 
   @Autowired
-  private AvailabilityRepository availabilityRepository;
+  private AccommodationTypeRepository accommodationTypeRepository;
+
+  @Autowired
+  private AvailabilityMapper availabilityMapper;
 
   @Autowired
   private WorkBookToAvailability workBookToAvailability;
 
-  /**
-   * Get availabilities based on the specified parameters.
-   *
-   * @param availabilityId       ID of the availability
-   * @param accommodationTypeId  ID of the accommodation type
-   * @param arrivalDate          Arrival date
-   * @param departureDate        Departure date
-   * @return List of availabilities
-   * @throws RuntimeException if there is an error while fetching data from the database
-   */
   @Override
-  public List<Availability> getAvailability(Long availabilityId, Long accommodationTypeId,
-                                            LocalDate arrivalDate, LocalDate departureDate) {
-    try {
-      AvailabilitySpecification availabilitySpecification = new AvailabilitySpecification(availabilityId, accommodationTypeId, arrivalDate, departureDate);
-      return availabilityRepository.findAll(availabilitySpecification);
-    } catch (Exception e) {
-      logger.error("Error while getting availability", e);
-      throw new RuntimeException("Error while getting availability", e);
-    }
+  @Transactional(readOnly = true)
+  public List<AvailabilityDTO> getAvailability(Long availabilityId, Long accommodationTypeId,
+                                               LocalDate arrivalDate, LocalDate departureDate) {
+    logger.debug("Fetching availability with specified criteria.");
+    AvailabilitySpecification spec = new AvailabilitySpecification(availabilityId, accommodationTypeId, arrivalDate, departureDate);
+    List<Availability> availabilities = availabilityRepository.findAll(spec);
+    return availabilities.stream().map(availabilityMapper::toDto).collect(Collectors.toList());
   }
 
-  /**
-   * Save availability from the provided DTO.
-   *
-   * @param availabilityDTO DTO containing availability information
-   * @throws RuntimeException if there is an error while saving data to the database
-   */
   @Override
-  public void saveAvailabilityFromDTO(AvailabilityDTO availabilityDTO) {
-    Availability availability = new Availability(
-        availabilityDTO.getAvailabilityId(),
-        availabilityDTO.getStayFromDate(),
-        availabilityDTO.getStayToDate(),
-        availabilityDTO.getMinNight(),
-        DaysOfWeek.setDays(availabilityDTO.getArrivalDays()),
-        DaysOfWeek.setDays(availabilityDTO.getDepartureDays()),
-        accommodationTypeServiceImpl.getAccommodationTypes(availabilityDTO.getAccommodationTypeId(), null, null).get(0)
-    );
-
-    try {
-      availabilityRepository.saveAndFlush(availability);
-    } catch (Exception e) {
-      logger.error("Error while saving availability", e);
-      throw new RuntimeException("Error while saving availability", e);
-    }
+  @Transactional
+  public AvailabilityDTO saveAvailabilityFromDTO(AvailabilityDTO availabilityDTO) {
+    logger.debug("Attempting to save new availability.");
+    return checkForOverlapAndSave(availabilityDTO);
   }
 
-  /**
-   * Save all availabilities from the provided workbook.
-   *
-   * @param workbook Workbook containing availability data
-   * @return Success message
-   * @throws RuntimeException if there is an error while saving data to the database
-   */
   @Override
+  @Transactional
+  public AvailabilityDTO updateAvailabilityFromDTO(AvailabilityDTO availabilityDTO){
+    Availability updatedAvailability = availabilityRepository.saveAndFlush(availabilityMapper.toEntity(availabilityDTO));
+    return availabilityMapper.toDto(updatedAvailability);
+  }
+
+  @Override
+  @Transactional
   public String saveAllAvailability(Workbook workbook) {
-    try {
-      List<Availability> availabilities = workBookToAvailability.excelToAvailability(workbook);
-      availabilityRepository.saveAllAndFlush(availabilities);
-      return "Availabilities Imported";
-    } catch (Exception e) {
-      logger.error("Error while saving all availabilities", e);
-      throw new RuntimeException("Error while saving all availabilities", e);
+    logger.debug("Starting batch import of availabilities from workbook.");
+    List<AvailabilityDTO> availabilitiesDTO = workBookToAvailability.excelToAvailabilityDTO(workbook);
+    for (AvailabilityDTO availabilityDTO : availabilitiesDTO) {
+      try {
+        checkForOverlapAndSave(availabilityDTO);
+      } catch (IllegalStateException e) {
+        logger.warn(e.getMessage());
+      }
     }
+    return "Batch import completed.";
   }
 
-  /**
-   * Delete availability by ID.
-   *
-   * @param id ID of the availability to be deleted
-   * @return Success message
-   * @throws RuntimeException if there is an error while deleting data from the database
-   */
   @Override
+  @Transactional
   public String deleteAvailabilityById(Long id) {
     try {
       availabilityRepository.deleteById(id);
+      logger.debug("Deleted availability with ID: {}", id);
       return "Deleted availability with ID: " + id;
+    } catch (DataIntegrityViolationException e) {
+      logger.error("Error deleting availability: Integrity violation for ID: {}", id, e);
+      throw new IllegalStateException("Cannot delete availability, as it is referenced by other records.");
     } catch (Exception e) {
-      logger.error("Error while deleting availability", e);
-      throw new RuntimeException("Error while deleting availability", e);
+      logger.error("Error deleting availability with ID: {}", id, e);
+      throw new IllegalStateException("Failed to delete availability: " + e.getMessage());
     }
+  }
+
+  private AvailabilityDTO checkForOverlapAndSave(AvailabilityDTO availabilityDTO) {
+    AvailabilitySpecification spec = new AvailabilitySpecification(null, availabilityDTO.getAccommodationTypeId(), availabilityDTO.getStayFromDate(), availabilityDTO.getStayToDate());
+    List<Availability> existingAvailabilities = availabilityRepository.findAll(spec);
+    if (!existingAvailabilities.isEmpty()) {
+      throw new IllegalStateException("Overlap detected: Availability already exists for the specified period.");
+    }
+    Availability availability = availabilityMapper.toEntity(availabilityDTO);
+    AccommodationType accommodationType = accommodationTypeRepository.findById(availabilityDTO.getAccommodationTypeId())
+        .orElseThrow(() -> new IllegalArgumentException("Invalid Accommodation Type ID."));
+    availability.setAccommodationType(accommodationType);
+    Availability savedAvailability = availabilityRepository.save(availability);
+    logger.debug("Successfully saved availability.");
+    return availabilityMapper.toDto(savedAvailability);
   }
 }

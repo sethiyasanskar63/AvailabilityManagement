@@ -4,12 +4,10 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * Entity class representing user information.
- * Author: Sanskar Sethiya
+ * Entity representing user information, including authentication credentials and roles for access control.
+ * This entity is used for managing user data within the application.
  */
 @Data
 @AllArgsConstructor
@@ -18,19 +16,17 @@ import org.slf4j.LoggerFactory;
 @Table(name = "user_info")
 public class UserInfo {
 
-  private static final Logger logger = LoggerFactory.getLogger(UserInfo.class);
-
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "user_id")
   private long userId;
 
-  @Column(name = "username")
+  @Column(name = "username", nullable = false, unique = true)
   private String username;
 
-  @Column(name = "password")
+  @Column(name = "password", nullable = false)
   private String password;
 
-  @Column(name = "roles")
+  @Column(name = "roles", nullable = false)
   private String roles;
 }

@@ -13,8 +13,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Configuration class for Swagger/OpenAPI documentation.
- * Author: Sanskar Sethiya
+ * Configures Swagger/OpenAPI documentation for the Availability Management API.
+ * This configuration sets up the API information, security schemes (such as JWT bearer token),
+ * and provides external documentation links.
  */
 @Configuration
 public class SwaggerConfig {
@@ -22,44 +23,40 @@ public class SwaggerConfig {
   private static final Logger logger = LoggerFactory.getLogger(SwaggerConfig.class);
 
   /**
-   * Creates the API key security scheme for Swagger.
+   * Creates a security scheme for the API using JWT bearer tokens.
+   * This method defines how the security scheme for API authentication is presented in the Swagger UI.
    *
-   * @return The configured SecurityScheme.
+   * @return The configured SecurityScheme object.
    */
   private SecurityScheme createAPIKeyScheme() {
-    try {
-      return new SecurityScheme().type(SecurityScheme.Type.HTTP)
-          .bearerFormat("JWT")
-          .scheme("bearer");
-    } catch (Exception e) {
-      logger.error("Error creating API key security scheme for Swagger", e);
-      throw e;
-    }
+    return new SecurityScheme()
+        .type(SecurityScheme.Type.HTTP)
+        .bearerFormat("JWT")
+        .scheme("bearer")
+        .description("JWT Bearer Token Authentication");
   }
 
   /**
-   * Configures the OpenAPI bean for Swagger documentation.
+   * Configures and creates the OpenAPI object for Swagger documentation.
+   * This includes API information such as title, description, version, and license.
+   * Additionally, it sets up the security scheme for JWT authentication and links to external documentation.
    *
-   * @return The configured OpenAPI.
+   * @return The configured OpenAPI object.
    */
   @Bean
   public OpenAPI openAPI() {
-    try {
-      return new OpenAPI().addSecurityItem(new SecurityRequirement()
-              .addList("Bearer Authentication"))
-          .components(new Components().addSecuritySchemes
-              ("Bearer Authentication", createAPIKeyScheme()))
-          .info(new Info().title("Availability Management API")
-              .description("API for managing availability of accommodations.")
-              .version("v1.0")
-              .license(new License().name("Availability Management Application")
-                  .url("https://github.com/sethiyasanskar63/AvailabilityManagement")))
-          .externalDocs(new ExternalDocumentation()
-              .description("Availability Management GitHub Project")
-              .url("https://github.com/sethiyasanskar63/AvailabilityManagement/projects/3"));
-    } catch (Exception e) {
-      logger.error("Error configuring OpenAPI for Swagger", e);
-      throw e;
-    }
+    return new OpenAPI()
+        .addSecurityItem(new SecurityRequirement().addList("Bearer Authentication"))
+        .components(new Components().addSecuritySchemes("Bearer Authentication", createAPIKeyScheme()))
+        .info(new Info()
+            .title("Availability Management API")
+            .description("API for managing availability of accommodations, including CRUD operations and availability queries.")
+            .version("v1.0")
+            .license(new License()
+                .name("MIT License")
+                .url("https://opensource.org/licenses/MIT")))
+        .externalDocs(new ExternalDocumentation()
+            .description("Availability Management GitHub Repository")
+            .url("https://github.com/sethiyasanskar63/AvailabilityManagement"));
   }
 }

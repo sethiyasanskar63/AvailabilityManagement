@@ -1,100 +1,110 @@
 package com.assignment.availabilitymanagement.controller;
 
-import com.assignment.availabilitymanagement.DTO.ResortDTO;
-import com.assignment.availabilitymanagement.entity.Resort;
-import com.assignment.availabilitymanagement.serviceImpl.ResortServiceImpl;
+import com.assignment.availabilitymanagement.dto.ResortDTO;
+import com.assignment.availabilitymanagement.service.ResortService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * Controller class for handling Resort-related HTTP requests.
- * Author: Sanskar Sethiya
+ * Handles resort-related operations, offering endpoints for CRUD operations on resorts.
  */
 @RestController
-@RequestMapping("/resort")
+@RequestMapping("/api/resorts")
 public class ResortController {
 
   private static final Logger logger = LoggerFactory.getLogger(ResortController.class);
 
   @Autowired
-  ResortServiceImpl resortServiceImpl;
+  private ResortService resortService;
 
   /**
-   * Retrieves a list of resorts based on optional parameters.
+   * Retrieves resorts, optionally filtered by resort ID.
    *
-   * @param resortId Optional parameter to filter resorts by ID.
-   * @return ResponseEntity containing a list of ResortDTOs or a bad request response.
+   * @param resortId Optional ID to filter the resort.
+   * @return ResponseEntity with List of ResortDTOs or a specific resort if ID is provided, including not found or bad request errors.
    */
-  @GetMapping("/getResorts")
-  public ResponseEntity<List<ResortDTO>> getResorts(@RequestParam(name = "resortId", required = false) Long resortId) {
+  @GetMapping
+  public ResponseEntity<?> getResorts(@RequestParam(required = false) Long resortId) {
     try {
-      List<ResortDTO> resorts = resortServiceImpl.getResorts(resortId)
-          .stream().map(ResortDTO::new).collect(Collectors.toList());
-      logger.info("Successfully retrieved resorts");
+      List<ResortDTO> resorts = resortService.getResorts(resortId);
+      if (resorts.isEmpty() && resortId != null) {
+        String message = String.format("No resort found with ID: %d", resortId);
+        logger.debug(message);
+        return ResponseEntity.notFound().build();
+      }
       return ResponseEntity.ok(resorts);
     } catch (Exception e) {
-      logger.error("Error while processing getResorts request", e);
-      return ResponseEntity.badRequest().build();
+      logger.error("Error retrieving resorts: {}", e.getMessage());
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving resorts due to an internal error.");
     }
   }
 
   /**
    * Adds a new resort.
    *
-   * @param resort The Resort object to be added.
-   * @return ResponseEntity containing the added ResortDTO or a bad request response.
+   * @param resortDTO DTO containing resort details.
+   * @return ResponseEntity with created ResortDTO or error message in case of failure.
    */
-  @PostMapping("/addResort")
-  public ResponseEntity<ResortDTO> addResort(@RequestBody Resort resort) {
+  @PostMapping
+  public ResponseEntity<?> addResort(@Valid @RequestBody ResortDTO resortDTO) {
     try {
-      ResortDTO addedResort = new ResortDTO(resortServiceImpl.saveResort(resort));
-      logger.info("Successfully added resort with ID: {}", addedResort.getResortId());
-      return ResponseEntity.ok(addedResort);
+      ResortDTO savedResort = resortService.saveResort(resortDTO);
+      return ResponseEntity.status(HttpStatus.CREATED).body(savedResort);
     } catch (Exception e) {
-      logger.error("Error while processing addResort request", e);
-      return ResponseEntity.badRequest().build();
+      logger.error("Error saving resort: {}", e.getMessage());
+      return ResponseEntity.badRequest().body(String.format("Error saving resort: %s", e.getMessage()));
     }
   }
 
   /**
-   * Updates an existing resort.
+   * Updates an existing resort by ID.
    *
-   * @param resort The Resort object with updated information.
-   * @return ResponseEntity containing the updated ResortDTO or a bad request response.
+   * @param id The ID of the resort to update.
+   * @param resortDTO DTO with updated resort details.
+   * @return ResponseEntity with updated ResortDTO or error message if resort doesn't exist or in case of failure.
    */
-  @PutMapping("/updateResort")
-  public ResponseEntity<ResortDTO> updateResort(@RequestBody Resort resort) {
+  @PutMapping("/{id}")
+  public ResponseEntity<?> updateResort(@PathVariable Long id, @Valid @RequestBody ResortDTO resortDTO) {
     try {
-      ResortDTO updatedResort = new ResortDTO(resortServiceImpl.saveResort(resort));
-      logger.info("Successfully updated resort with ID: {}", updatedResort.getResortId());
+      resortDTO.setResortId(id);
+      ResortDTO updatedResort = resortService.saveResort(resortDTO);
       return ResponseEntity.ok(updatedResort);
+    } catch (EmptyResultDataAccessException e) {
+      String message = String.format("Cannot update non-existent resort with ID: %d", id);
+      logger.debug(message);
+      return ResponseEntity.notFound().build();
     } catch (Exception e) {
-      logger.error("Error while processing updateResort request", e);
-      return ResponseEntity.badRequest().build();
+      logger.error("Error updating resort with ID {}: {}", id, e.getMessage());
+      return ResponseEntity.badRequest().body(String.format("Error updating resort: %s", e.getMessage()));
     }
   }
 
   /**
-   * Deletes a resort based on its ID.
+   * Deletes a resort by its ID.
    *
-   * @param resortId The ID of the resort to be deleted.
-   * @return ResponseEntity containing a success message or a bad request response.
+   * @param id ID of the resort to delete.
+   * @return ResponseEntity with success message or error message if resort doesn't exist or in case of failure.
    */
-  @DeleteMapping("/deleteResortById")
-  public ResponseEntity<String> deleteResortById(@RequestParam(name = "resortId") Long resortId) {
+  @DeleteMapping("/{id}")
+  public ResponseEntity<?> deleteResortByID(@PathVariable Long id) {
     try {
-      String result = resortServiceImpl.deleteResortByID(resortId);
-      logger.info("Successfully deleted resort with ID: {}", resortId);
-      return ResponseEntity.ok(result);
+      resortService.deleteResortByID(id);
+      return ResponseEntity.ok().body(String.format("Resort with ID: %d was successfully deleted.", id));
+    } catch (EmptyResultDataAccessException e) {
+      String message = String.format("Attempted to delete a non-existent resort with ID: %d", id);
+      logger.debug(message);
+      return ResponseEntity.notFound().build();
     } catch (Exception e) {
-      logger.error("Error while processing deleteResortById request", e);
-      return ResponseEntity.badRequest().build();
+      logger.error("Error deleting resort with ID {}: {}", id, e.getMessage());
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(String.format("Error deleting resort: %s", e.getMessage()));
     }
   }
 }

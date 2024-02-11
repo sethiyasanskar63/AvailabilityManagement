@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Specification class for filtering AccommodationType entities.
- * Author: Sanskar Sethiya
+ * Specification for querying AccommodationType entities.
+ * Supports filtering by accommodation type ID and/or availability within a specific date range.
  */
 public class AccommodationTypeSpecification implements Specification<AccommodationType> {
 
@@ -26,11 +26,11 @@ public class AccommodationTypeSpecification implements Specification<Accommodati
   private final LocalDate departureDate;
 
   /**
-   * Constructor for creating an AccommodationTypeSpecification.
+   * Constructs a new AccommodationTypeSpecification with the specified filters.
    *
-   * @param accommodationTypeId ID of the accommodation type
-   * @param arrivalDate         Arrival date for filtering
-   * @param departureDate       Departure date for filtering
+   * @param accommodationTypeId The ID of the accommodation type to filter by (nullable).
+   * @param arrivalDate The start date of the availability period to filter by (nullable).
+   * @param departureDate The end date of the availability period to filter by (nullable).
    */
   public AccommodationTypeSpecification(Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate) {
     this.accommodationTypeId = accommodationTypeId;
@@ -39,43 +39,34 @@ public class AccommodationTypeSpecification implements Specification<Accommodati
   }
 
   /**
-   * Build the predicate based on the specified criteria.
+   * Builds the predicate for querying accommodation types based on the specified filters.
    *
-   * @param root             Root entity
-   * @param query            Criteria query
-   * @param criteriaBuilder Criteria builder
-   * @return Predicate representing the filtering criteria
-   * @throws RuntimeException if there is an error while building the predicate
+   * @param root    The root of the query.
+   * @param query   The criteria query.
+   * @param cb      The criteria builder.
+   * @return        The predicate for filtering the query, based on accommodation type ID and availability dates.
    */
   @Override
-  public Predicate toPredicate(Root<AccommodationType> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+  public Predicate toPredicate(Root<AccommodationType> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+    List<Predicate> predicates = new ArrayList<>();
+
     try {
-      List<Predicate> predicates = new ArrayList<>();
-
       if (accommodationTypeId != null) {
-        predicates.add(criteriaBuilder.equal(root.get("accommodationTypeId"), accommodationTypeId));
+        predicates.add(cb.equal(root.get("id"), accommodationTypeId));
       }
-
       if (arrivalDate != null && departureDate != null) {
-        predicates.add(criteriaBuilder.or(
-            criteriaBuilder.and(
-                criteriaBuilder.lessThanOrEqualTo(root.join("availabilities").get("stayFromDate"), arrivalDate),
-                criteriaBuilder.greaterThanOrEqualTo(root.join("availabilities").get("stayToDate"), arrivalDate)
-            )
-        ));
-
-        predicates.add(criteriaBuilder.or(
-            criteriaBuilder.and(
-                criteriaBuilder.lessThanOrEqualTo(root.join("availabilities").get("stayFromDate"), departureDate),
-                criteriaBuilder.greaterThanOrEqualTo(root.join("availabilities").get("stayToDate"), departureDate)
-            )
-        ));
+        if (!arrivalDate.isAfter(departureDate)) {
+          Predicate arrivalBeforeDeparture = cb.lessThanOrEqualTo(root.join("availabilities").get("stayFromDate"), departureDate);
+          Predicate departureAfterArrival = cb.greaterThanOrEqualTo(root.join("availabilities").get("stayToDate"), arrivalDate);
+          predicates.add(cb.and(arrivalBeforeDeparture, departureAfterArrival));
+        } else {
+          logger.warn("Arrival date is after departure date for accommodationTypeId: {}", accommodationTypeId);
+        }
       }
-
-      return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
     } catch (Exception e) {
-      logger.error("Error while building AccommodationTypeSpecification predicate", e);
-      throw new RuntimeException("Error while building AccommodationTypeSpecification predicate", e);
+      logger.error("Error building predicates in AccommodationTypeSpecification for accommodationTypeId: {}", accommodationTypeId, e);
     }
+
+    return cb.and(predicates.toArray(new Predicate[0]));
   }
 }

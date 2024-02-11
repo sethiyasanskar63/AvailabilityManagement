@@ -1,6 +1,6 @@
 package com.assignment.availabilitymanagement.config;
 
-import com.assignment.availabilitymanagement.entity.AuditLog;
+import com.assignment.availabilitymanagement.dto.AuditLogDTO;
 import com.assignment.availabilitymanagement.serviceImpl.AuditLogServiceImpl;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -36,7 +36,7 @@ public class AuditConfig {
       " || execution(public * com.assignment.availabilitymanagement.serviceImpl.AvailabilityServiceImpl.*(..))")
   public void logAfterReturning(JoinPoint joinPoint) {
     try {
-      auditLogService.addLogs(AuditLog.builder().creationDate(new Date())
+      auditLogService.saveLogs(AuditLogDTO.builder().creationDate(new Date())
           .description(joinPoint.getTarget().getClass().getSimpleName() + " method called: " +
               joinPoint.getSignature().getName() + " with arguments: " +
               getMethodArguments(joinPoint.getArgs()))

@@ -1,7 +1,7 @@
 package com.assignment.availabilitymanagement.util;
 
-import com.assignment.availabilitymanagement.entity.Availability;
-import com.assignment.availabilitymanagement.serviceImpl.AccommodationTypeServiceImpl;
+import com.assignment.availabilitymanagement.dto.AvailabilityDTO;
+import com.assignment.availabilitymanagement.mapper.AvailabilityMapper;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -21,82 +21,54 @@ public class WorkBookToAvailability {
 
   private static final Logger logger = LoggerFactory.getLogger(WorkBookToAvailability.class);
 
-  @Autowired
-  private AccommodationTypeServiceImpl accommodationTypeServiceImpl;
-
-  /**
-   * Converts an Excel workbook to a list of Availability objects.
-   *
-   * @param workbook The Excel workbook containing Availability data.
-   * @return List of Availability objects.
-   * @throws RuntimeException if there's an error while processing the workbook.
-   */
-  public List<Availability> excelToAvailability(Workbook workbook) {
-    List<Availability> availabilities = new ArrayList<>();
+  public List<AvailabilityDTO> excelToAvailabilityDTO(Workbook workbook) {
+    List<AvailabilityDTO> availabilityDTOs = new ArrayList<>();
 
     try {
       Sheet sheet = workbook.getSheetAt(0);
       Iterator<Row> rowIterator = sheet.iterator();
-
       if (rowIterator.hasNext()) {
-        rowIterator.next(); // Skip header row
+        rowIterator.next();
       }
 
       while (rowIterator.hasNext()) {
         Row row = rowIterator.next();
-        Availability availability = createAvailabilityFromRow(row);
-        availabilities.add(availability);
+        try {
+          AvailabilityDTO availabilityDTO = createAvailabilityDTOFromRow(row);
+          availabilityDTOs.add(availabilityDTO);
+        } catch (Exception e) {
+          logger.error("Error processing row, skipping. Error: {}", e.getMessage());
+        }
       }
     } catch (Exception e) {
-      logger.error("Error while processing Excel sheet to Availability", e);
-      throw new RuntimeException("Error while processing Excel sheet to Availability", e);
+      logger.error("Error while processing Excel sheet to AvailabilityDTO", e);
+      throw new RuntimeException("Error while processing Excel sheet to AvailabilityDTO: " + e.getMessage(), e);
     }
 
-    return availabilities;
+    return availabilityDTOs;
   }
 
-  /**
-   * Creates an Availability object from a row in the Excel sheet.
-   *
-   * @param row The Excel row containing Availability data.
-   * @return The created Availability object.
-   * @throws RuntimeException if there's an error while creating the Availability object.
-   */
-  private Availability createAvailabilityFromRow(Row row) {
+  private AvailabilityDTO createAvailabilityDTOFromRow(Row row) {
+    AvailabilityDTO availabilityDTO = new AvailabilityDTO();
+
     try {
-      Availability availability = new Availability();
-
-      availability.setAvailabilityId((long) row.getCell(0).getNumericCellValue());
-      availability.setAccommodationType(accommodationTypeServiceImpl.getAccommodationTypes((long) row.getCell(1).getNumericCellValue(), null, null).get(0));
-      availability.setMinNight((int) row.getCell(2).getNumericCellValue());
-      availability.setStayFromDate(LocalDate.from(row.getCell(3).getLocalDateTimeCellValue()));
-      availability.setStayToDate(LocalDate.from(row.getCell(4).getLocalDateTimeCellValue()));
-      availability.setArrivalDays(StringToBitMask(row.getCell(5).getStringCellValue()));
-      availability.setDepartureDays(StringToBitMask(row.getCell(6).getStringCellValue()));
-
-      return availability;
+      availabilityDTO.setAccommodationTypeId((long) row.getCell(0).getNumericCellValue());
+      availabilityDTO.setMinNight((int) row.getCell(1).getNumericCellValue());
+      availabilityDTO.setStayFromDate(LocalDate.parse(row.getCell(2).getStringCellValue()));
+      availabilityDTO.setStayToDate(LocalDate.parse(row.getCell(3).getStringCellValue()));
+      availabilityDTO.setArrivalDays(convertStringToDayArray(row.getCell(4).getStringCellValue()));
+      availabilityDTO.setDepartureDays(convertStringToDayArray(row.getCell(5).getStringCellValue()));
     } catch (Exception e) {
-      logger.error("Error while creating Availability from Excel row", e);
-      throw new RuntimeException("Error while creating Availability from Excel row", e);
+      logger.error("Error while creating AvailabilityDTO from Excel row: {}", e.getMessage());
+      throw e;
     }
+    return availabilityDTO;
   }
 
-  /**
-   * Converts a comma-separated string of days to a bitmask.
-   *
-   * @param daysString The comma-separated string of days.
-   * @return Bitmask representing the selected days.
-   */
-  private Integer StringToBitMask(String daysString) {
-    try {
-      int[] days = Arrays.stream(daysString.split(","))
-          .map(String::trim)
-          .mapToInt(Integer::parseInt)
-          .toArray();
-      return DaysOfWeek.setDays(days);
-    } catch (Exception e) {
-      logger.error("Error while converting days string to bitmask", e);
-      throw new RuntimeException("Error while converting days string to bitmask", e);
-    }
+  private int[] convertStringToDayArray(String daysString) {
+    return Arrays.stream(daysString.split(","))
+        .map(String::trim)
+        .mapToInt(Integer::parseInt)
+        .toArray();
   }
 }
