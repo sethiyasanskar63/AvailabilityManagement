@@ -1,36 +1,38 @@
 package com.assignment.availabilitymanagement.service;
 
-import com.assignment.availabilitymanagement.entity.Resort;
-
+import com.assignment.availabilitymanagement.dto.ResortDTO;
 import java.util.List;
 
 /**
- * Service interface for managing resorts.
- * Author: Sanskar Sethiya
+ * Service interface for managing resorts. Provides methods for retrieving, saving,
+ * and deleting resorts using Data Transfer Objects (DTOs).
  */
 public interface ResortService {
 
   /**
-   * Get a list of resorts based on the provided resortId.
+   * Retrieves a list of resorts based on the provided resort ID. If the resort ID is null,
+   * retrieves all resorts.
    *
-   * @param resortId ID of the resort (can be null for all resorts)
-   * @return List of resorts
+   * @param resortId Optional ID of the resort for filtering.
+   * @return A list of ResortDTO objects representing the resorts.
    */
-  List<Resort> getResorts(Long resortId);
+  List<ResortDTO> getResorts(Long resortId);
 
   /**
-   * Save or update a resort.
+   * Saves or updates a resort based on the provided ResortDTO. This method is responsible
+   * for both creating new resorts and updating existing ones.
    *
-   * @param resort Resort to be saved or updated
-   * @return Saved or updated resort
+   * @param resortDTO The ResortDTO object containing resort data to be saved or updated.
+   * @return The saved or updated ResortDTO object.
    */
-  Resort saveResort(Resort resort);
+  ResortDTO saveResort(ResortDTO resortDTO);
 
   /**
-   * Delete a resort by its ID.
+   * Deletes a resort identified by its ID. If the resort does not exist, this method
+   * is expected to handle the situation appropriately, typically by logging the incident
+   * or throwing a managed exception.
    *
-   * @param id ID of the resort to be deleted
-   * @return Result message indicating success or failure
+   * @param id The ID of the resort to be deleted.
    */
-  String deleteResortByID(Long id);
+  void deleteResortByID(Long id);
 }

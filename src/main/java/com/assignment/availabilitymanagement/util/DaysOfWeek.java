@@ -6,8 +6,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 
 /**
- * Utility class for handling days of the week.
- * Author: Sanskar Sethiya
+ * Utility class for handling days of the week using a bitmask. This approach allows for efficient
+ * storage and retrieval of day selections. Methods in this class convert between arrays of day
+ * constants and a single integer bitmask, where each bit represents a day of the week.
  */
 public class DaysOfWeek {
 
@@ -22,47 +23,43 @@ public class DaysOfWeek {
   public static final int SUNDAY = 7;
 
   /**
-   * Sets the selected days in a bitmask.
+   * Converts an array of days into a bitmask representing the selection of days.
    *
-   * @param selectedDays Days to be set.
-   * @return Bitmask representing the selected days.
-   * @throws RuntimeException if there is an error while setting days in the bitmask
+   * @param selectedDays Days to be set, represented by their corresponding integer values.
+   * @return An integer bitmask representing the selected days.
+   * @throws RuntimeException if an invalid day is provided or any other error occurs.
    */
   public static int setDays(int... selectedDays) {
+    int bitmask = 0;
     try {
-      int bitmask = 0;
       for (int day : selectedDays) {
+        if (day < MONDAY || day > SUNDAY) {
+          throw new IllegalArgumentException("Invalid day: " + day);
+        }
         bitmask |= (1 << (day - 1));
       }
       return bitmask;
     } catch (Exception e) {
-      logger.error("Error while setting days in bitmask", e);
-      throw new RuntimeException("Error while setting days in bitmask", e);
+      logger.error("Exception while setting days in bitmask", e);
+      throw new RuntimeException("Exception while setting days in bitmask", e);
     }
   }
 
   /**
    * Retrieves the selected days from a bitmask.
    *
-   * @param bitmask Bitmask representing the selected days.
-   * @return Array of selected days.
-   * @throws RuntimeException if there is an error while getting selected days from the bitmask
+   * @param bitmask An integer bitmask representing the selected days.
+   * @return An array of integers, each representing a selected day.
+   * @throws RuntimeException if there is an error processing the bitmask.
    */
   public static int[] getSelectedDays(int bitmask) {
     try {
-      int[] selectedDays = new int[7];
-      int index = 0;
-
-      for (int i = 0; i < 7; i++) {
-        int currentDay = 1 << i;
-        if ((bitmask & currentDay) != 0) {
-          selectedDays[index++] = i + 1;
-        }
-      }
-      return Arrays.copyOf(selectedDays, index);
+      return Arrays.stream(new int[]{MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY})
+          .filter(day -> (bitmask & (1 << (day - 1))) != 0)
+          .toArray();
     } catch (Exception e) {
-      logger.error("Error while getting selected days from bitmask", e);
-      throw new RuntimeException("Error while getting selected days from bitmask", e);
+      logger.error("Exception while getting selected days from bitmask", e);
+      throw new RuntimeException("Exception while getting selected days from bitmask", e);
     }
   }
 }

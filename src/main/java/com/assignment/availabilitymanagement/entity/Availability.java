@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 /**
- * Entity class representing Availability.
- * Author: Sanskar Sethiya
+ * Entity representing availability information for an accommodation type,
+ * including stay dates, minimum nights, and arrival/departure day restrictions.
  */
 @Data
 @AllArgsConstructor
@@ -23,15 +23,13 @@ public class Availability {
   @Column(name = "availability_id")
   private Long availabilityId;
 
-  @Temporal(TemporalType.DATE)
-  @Column(name = "stay_from_date")
+  @Column(name = "stay_from_date", nullable = false)
   private LocalDate stayFromDate;
 
-  @Temporal(TemporalType.DATE)
-  @Column(name = "stay_to_date")
+  @Column(name = "stay_to_date", nullable = false)
   private LocalDate stayToDate;
 
-  @Column(name = "min_night")
+  @Column(name = "min_night", nullable = false)
   private int minNight;
 
   @Column(name = "arrival_days")
@@ -40,7 +38,7 @@ public class Availability {
   @Column(name = "departure_days")
   private Integer departureDays;
 
-  @ManyToOne
-  @JoinColumn(name = "accommodation_type_id")
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "accommodation_type_id", nullable = false)
   private AccommodationType accommodationType;
 }

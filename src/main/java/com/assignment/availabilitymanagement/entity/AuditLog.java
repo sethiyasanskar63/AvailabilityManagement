@@ -1,17 +1,16 @@
 package com.assignment.availabilitymanagement.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.Date;
 
 /**
- * Entity class representing AuditLog.
- * Author: Sanskar Sethiya
+ * Captures audit log entries for tracking changes or significant events within the application.
  */
 @Data
 @Builder
@@ -26,11 +25,10 @@ public class AuditLog {
   @Column(name = "log_id")
   private long logId;
 
-  @Column(name = "description")
+  @Column(name = "description", nullable = false)
   private String description;
 
   @CreationTimestamp
-  @Temporal(TemporalType.TIMESTAMP)
-  @Column(name = "creation_date", nullable = false, updatable = false)
+  @Column(name = "creation_date", nullable = false)
   private Date creationDate;
 }
