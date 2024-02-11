@@ -42,6 +42,15 @@ public class AvailabilityServiceImpl implements AvailabilityService {
   @Autowired
   private WorkBookToAvailability workBookToAvailability;
 
+  /**
+   * Fetches availabilities based on the specified criteria.
+   *
+   * @param availabilityId       The ID of the availability.
+   * @param accommodationTypeId  The ID of the accommodation type.
+   * @param arrivalDate          The arrival date.
+   * @param departureDate        The departure date.
+   * @return A list of availability DTOs.
+   */
   @Override
   @Transactional(readOnly = true)
   public List<AvailabilityDTO> getAvailability(Long availabilityId, Long accommodationTypeId,
@@ -52,6 +61,12 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     return availabilities.stream().map(availabilityMapper::toDto).collect(Collectors.toList());
   }
 
+  /**
+   * Saves an availability from the provided DTO.
+   *
+   * @param availabilityDTO The availability DTO to be saved.
+   * @return The saved availability DTO.
+   */
   @Override
   @Transactional
   public AvailabilityDTO saveAvailabilityFromDTO(AvailabilityDTO availabilityDTO) {
@@ -59,6 +74,12 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     return checkForOverlapAndSave(availabilityDTO);
   }
 
+  /**
+   * Updates an availability from the provided DTO.
+   *
+   * @param availabilityDTO The updated availability DTO.
+   * @return The updated availability DTO.
+   */
   @Override
   @Transactional
   public AvailabilityDTO updateAvailabilityFromDTO(AvailabilityDTO availabilityDTO){
@@ -66,6 +87,12 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     return availabilityMapper.toDto(updatedAvailability);
   }
 
+  /**
+   * Saves all availabilities from the provided Workbook.
+   *
+   * @param workbook The Workbook containing availabilities.
+   * @return A message indicating the completion of the batch import.
+   */
   @Override
   @Transactional
   public String saveAllAvailability(Workbook workbook) {
@@ -81,13 +108,17 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     return "Batch import completed.";
   }
 
+  /**
+   * Deletes an availability by its ID.
+   *
+   * @param id The ID of the availability to be deleted.
+   */
   @Override
   @Transactional
-  public String deleteAvailabilityById(Long id) {
+  public void deleteAvailabilityById(Long id) {
     try {
       availabilityRepository.deleteById(id);
       logger.debug("Deleted availability with ID: {}", id);
-      return "Deleted availability with ID: " + id;
     } catch (DataIntegrityViolationException e) {
       logger.error("Error deleting availability: Integrity violation for ID: {}", id, e);
       throw new IllegalStateException("Cannot delete availability, as it is referenced by other records.");
@@ -97,6 +128,12 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     }
   }
 
+  /**
+   * Checks for overlap with existing availabilities and saves the provided availability DTO.
+   *
+   * @param availabilityDTO The availability DTO to be saved.
+   * @return The saved availability DTO.
+   */
   private AvailabilityDTO checkForOverlapAndSave(AvailabilityDTO availabilityDTO) {
     AvailabilitySpecification spec = new AvailabilitySpecification(null, availabilityDTO.getAccommodationTypeId(), availabilityDTO.getStayFromDate(), availabilityDTO.getStayToDate());
     List<Availability> existingAvailabilities = availabilityRepository.findAll(spec);

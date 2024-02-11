@@ -1,6 +1,7 @@
 package com.assignment.availabilitymanagement.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ import jakarta.validation.constraints.Positive;
  * Data Transfer Object for conveying accommodation type information between processes.
  */
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class AccommodationTypeDTO {

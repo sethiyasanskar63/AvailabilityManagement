@@ -12,11 +12,20 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Utility class to convert a list of Availability entities into an Excel workbook.
+ */
 @Component
 public class AvailabilityToWorkbook {
 
   private static final Logger logger = LoggerFactory.getLogger(AvailabilityToWorkbook.class);
 
+  /**
+   * Converts a list of Availability entities into an Excel workbook.
+   *
+   * @param availabilities The list of Availability entities to convert.
+   * @return An Excel workbook containing the Availability data.
+   */
   public static Workbook getAvailabilityWorkbook(List<Availability> availabilities) {
     Workbook workbook = new XSSFWorkbook();
     try {
@@ -45,6 +54,12 @@ public class AvailabilityToWorkbook {
     return workbook;
   }
 
+  /**
+   * Converts an integer array to a comma-separated string.
+   *
+   * @param intArray The integer array to convert.
+   * @return A comma-separated string representation of the integer array.
+   */
   private static String intArrayToString(int[] intArray) {
     if (intArray == null || intArray.length == 0) {
       return "";

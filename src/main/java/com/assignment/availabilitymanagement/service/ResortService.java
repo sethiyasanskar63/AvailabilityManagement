@@ -33,7 +33,6 @@ public interface ResortService {
    * or throwing a managed exception.
    *
    * @param id The ID of the resort to be deleted.
-   * @return A message indicating the outcome of the operation.
    */
   void deleteResortByID(Long id);
 }

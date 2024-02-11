@@ -47,7 +47,6 @@ public interface AvailabilityService {
    * Deletes an availability record by its ID.
    *
    * @param id The ID of the availability to be deleted.
-   * @return String message indicating the result of the deletion operation, either success or an error message.
    */
-  String deleteAvailabilityById(Long id);
+  void deleteAvailabilityById(Long id);
 }

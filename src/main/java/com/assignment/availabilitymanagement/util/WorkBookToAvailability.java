@@ -1,13 +1,11 @@
 package com.assignment.availabilitymanagement.util;
 
 import com.assignment.availabilitymanagement.dto.AvailabilityDTO;
-import com.assignment.availabilitymanagement.mapper.AvailabilityMapper;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -16,11 +14,21 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Utility class to convert an Excel workbook into a list of AvailabilityDTO objects.
+ */
 @Component
 public class WorkBookToAvailability {
 
   private static final Logger logger = LoggerFactory.getLogger(WorkBookToAvailability.class);
 
+  /**
+   * Converts an Excel workbook into a list of AvailabilityDTO objects.
+   *
+   * @param workbook The Excel workbook to convert.
+   * @return A list of AvailabilityDTO objects parsed from the workbook.
+   * @throws RuntimeException If there's an error processing the workbook.
+   */
   public List<AvailabilityDTO> excelToAvailabilityDTO(Workbook workbook) {
     List<AvailabilityDTO> availabilityDTOs = new ArrayList<>();
 
@@ -28,7 +36,7 @@ public class WorkBookToAvailability {
       Sheet sheet = workbook.getSheetAt(0);
       Iterator<Row> rowIterator = sheet.iterator();
       if (rowIterator.hasNext()) {
-        rowIterator.next();
+        rowIterator.next(); // Skipping header row
       }
 
       while (rowIterator.hasNext()) {
@@ -48,7 +56,14 @@ public class WorkBookToAvailability {
     return availabilityDTOs;
   }
 
-  private AvailabilityDTO createAvailabilityDTOFromRow(Row row) {
+  /**
+   * Creates an AvailabilityDTO object from a row in the Excel workbook.
+   *
+   * @param row The row in the Excel workbook.
+   * @return An AvailabilityDTO object created from the row data.
+   * @throws Exception If there's an error creating the AvailabilityDTO.
+   */
+  private AvailabilityDTO createAvailabilityDTOFromRow(Row row) throws Exception {
     AvailabilityDTO availabilityDTO = new AvailabilityDTO();
 
     try {
@@ -65,6 +80,12 @@ public class WorkBookToAvailability {
     return availabilityDTO;
   }
 
+  /**
+   * Converts a comma-separated string of day numbers to an integer array.
+   *
+   * @param daysString The comma-separated string of day numbers.
+   * @return An integer array containing the day numbers.
+   */
   private int[] convertStringToDayArray(String daysString) {
     return Arrays.stream(daysString.split(","))
         .map(String::trim)
