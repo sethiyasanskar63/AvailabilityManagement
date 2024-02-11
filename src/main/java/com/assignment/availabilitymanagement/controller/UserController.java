@@ -1,6 +1,6 @@
 package com.assignment.availabilitymanagement.controller;
 
-import com.assignment.availabilitymanagement.DTO.UserDTO;
+import com.assignment.availabilitymanagement.dto.UserDTO;
 import com.assignment.availabilitymanagement.entity.UserInfo;
 import com.assignment.availabilitymanagement.security.JwtService;
 import com.assignment.availabilitymanagement.security.UserService;

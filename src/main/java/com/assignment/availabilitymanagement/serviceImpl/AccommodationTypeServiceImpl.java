@@ -1,21 +1,24 @@
 package com.assignment.availabilitymanagement.serviceImpl;
 
+import com.assignment.availabilitymanagement.dto.AccommodationTypeDTO;
 import com.assignment.availabilitymanagement.entity.AccommodationType;
+import com.assignment.availabilitymanagement.mapper.AccommodationTypeMapper;
 import com.assignment.availabilitymanagement.repository.AccommodationTypeRepository;
 import com.assignment.availabilitymanagement.service.AccommodationTypeService;
 import com.assignment.availabilitymanagement.specification.AccommodationTypeSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Service implementation for managing accommodation types.
- * Author: Sanskar Sethiya
  */
 @Service
 public class AccommodationTypeServiceImpl implements AccommodationTypeService {
@@ -25,58 +28,63 @@ public class AccommodationTypeServiceImpl implements AccommodationTypeService {
   @Autowired
   private AccommodationTypeRepository accommodationTypeRepository;
 
+  @Autowired
+  private AccommodationTypeMapper accommodationTypeMapper;
+
   /**
-   * Get a list of accommodation types based on the provided parameters.
+   * Retrieves accommodation types based on the given criteria.
    *
-   * @param accommodationTypeId ID of the accommodation type (can be null for all types)
-   * @param arrivalDate         Start date of the stay
-   * @param departureDate       End date of the stay
-   * @return List of accommodation types
-   * @throws DataAccessException if there is an error while fetching data from the database
+   * @param accommodationTypeId Optional ID for filtering a specific accommodation type.
+   * @param arrivalDate Optional start date for availability filtering.
+   * @param departureDate Optional end date for availability filtering.
+   * @return A list of {@link AccommodationTypeDTO} that match the criteria.
    */
   @Override
-  public List<AccommodationType> getAccommodationTypes(Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate) {
+  @Transactional(readOnly = true)
+  public List<AccommodationTypeDTO> getAccommodationTypes(Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate) {
+    AccommodationTypeSpecification specification = new AccommodationTypeSpecification(accommodationTypeId, arrivalDate, departureDate);
+    List<AccommodationType> accommodationTypes = accommodationTypeRepository.findAll(specification);
+    logger.debug("Retrieved {} accommodation types based on the given criteria.", accommodationTypes.size());
+    return accommodationTypes.stream()
+        .map(accommodationTypeMapper::entityToDto)
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Saves a new or updates an existing accommodation type.
+   *
+   * @param accommodationTypeDTO The accommodation type data to save.
+   * @return The saved accommodation type as {@link AccommodationTypeDTO}.
+   */
+  @Override
+  @Transactional
+  public AccommodationTypeDTO saveAccommodationType(AccommodationTypeDTO accommodationTypeDTO) {
     try {
-      AccommodationTypeSpecification accommodationTypeSpecification = new AccommodationTypeSpecification(accommodationTypeId, arrivalDate, departureDate);
-      return accommodationTypeRepository.findAll(accommodationTypeSpecification);
-    } catch (DataAccessException e) {
-      logger.error("Error while fetching accommodation types from the database", e);
-      throw e;
+      AccommodationType accommodationType = accommodationTypeMapper.dtoToEntity(accommodationTypeDTO);
+      AccommodationType savedAccommodationType = accommodationTypeRepository.save(accommodationType);
+      logger.debug("Saved accommodation type with ID: {}", savedAccommodationType.getAccommodationTypeId());
+      return accommodationTypeMapper.entityToDto(savedAccommodationType);
+    } catch (Exception e) {
+      logger.error("Error saving accommodation type: ", e);
+      throw new RuntimeException("Failed to save accommodation type: " + e.getMessage(), e);
     }
   }
 
   /**
-   * Save an accommodation type.
+   * Deletes an accommodation type by its ID.
    *
-   * @param accommodationType Accommodation type to be saved
-   * @return Saved accommodation type
-   * @throws DataAccessException if there is an error while saving data to the database
+   * @param id The ID of the accommodation type to delete.
+   * @throws RuntimeException if the accommodation type does not exist.
    */
   @Override
-  public AccommodationType saveAccommodationType(AccommodationType accommodationType) {
-    try {
-      return accommodationTypeRepository.saveAndFlush(accommodationType);
-    } catch (DataAccessException e) {
-      logger.error("Error while saving accommodation type to the database", e);
-      throw e;
-    }
-  }
-
-  /**
-   * Delete an accommodation type by its ID.
-   *
-   * @param id ID of the accommodation type to be deleted
-   * @return Result message indicating success or failure
-   * @throws DataAccessException if there is an error while deleting data from the database
-   */
-  @Override
-  public String deleteAccommodationTypeById(Long id) {
+  @Transactional
+  public void deleteAccommodationTypeById(Long id) {
     try {
       accommodationTypeRepository.deleteById(id);
-      return "Deleted accommodation type ID " + id;
-    } catch (DataAccessException e) {
-      logger.error("Error while deleting accommodation type from the database", e);
-      throw e;
+      logger.debug("Deleted accommodation type with ID: {}", id);
+    } catch (EmptyResultDataAccessException e) {
+      logger.error("Attempted to delete a non-existent accommodation type with ID: {}", id);
+      throw new RuntimeException("Accommodation type not found with ID: " + id);
     }
   }
 }

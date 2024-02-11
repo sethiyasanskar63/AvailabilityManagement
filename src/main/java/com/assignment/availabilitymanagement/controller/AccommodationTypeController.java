@@ -1,8 +1,7 @@
 package com.assignment.availabilitymanagement.controller;
 
-import com.assignment.availabilitymanagement.DTO.AccommodationTypeDTO;
-import com.assignment.availabilitymanagement.entity.AccommodationType;
-import com.assignment.availabilitymanagement.serviceImpl.AccommodationTypeServiceImpl;
+import com.assignment.availabilitymanagement.dto.AccommodationTypeDTO;
+import com.assignment.availabilitymanagement.service.AccommodationTypeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,107 +9,112 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * Controller class for managing Accommodation Types.
- * Author: Sanskar Sethiya
+ * Controller for managing accommodation types within the application.
+ * Provides endpoints for retrieving, adding, updating, and deleting accommodation types.
  */
 @RestController
-@RequestMapping("/accommodationType")
+@RequestMapping("/api/accommodationTypes")
 public class AccommodationTypeController {
 
   private static final Logger logger = LoggerFactory.getLogger(AccommodationTypeController.class);
 
   @Autowired
-  AccommodationTypeServiceImpl accommodationTypeServiceImpl;
+  private AccommodationTypeService accommodationTypeService;
 
   /**
-   * Retrieves a list of Accommodation Types based on the provided parameters.
+   * Retrieves a list of all accommodation types, optionally filtered by accommodation type ID or availability within a date range.
    *
-   * @param accommodationTypeId The ID of the Accommodation Type (optional).
-   * @param arrivalDate         The arrival date (optional).
-   * @param departureDate       The departure date (optional).
-   * @return ResponseEntity with a list of AccommodationTypeDTO.
+   * @param accommodationTypeId Optional ID of the accommodation type for filtering.
+   * @param arrivalDate Optional arrival date for availability checking.
+   * @param departureDate Optional departure date for availability checking.
+   * @return ResponseEntity containing the list of accommodation types or an appropriate error message.
    */
-  @GetMapping("/getAccommodationTypes")
-  public ResponseEntity<List<AccommodationTypeDTO>> getAccommodationTypes(
-      @RequestParam(name = "accommodationTypeId", required = false) Long accommodationTypeId,
-      @RequestParam(name = "arrivalDate", required = false)
-      @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate arrivalDate,
-      @RequestParam(name = "departureDate", required = false)
-      @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate departureDate) {
-
+  @GetMapping
+  public ResponseEntity<?> getAccommodationTypes(
+      @RequestParam(required = false) Long accommodationTypeId,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate arrivalDate,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate) {
     try {
-      if ((arrivalDate == null && departureDate != null) || (arrivalDate != null && departureDate == null)) {
-        logger.warn("Invalid request parameters for getAccommodationTypes");
-        return ResponseEntity.badRequest().build();
+      if (accommodationTypeId != null && (arrivalDate != null || departureDate != null)) {
+        return ResponseEntity.badRequest().body("Cannot specify accommodationTypeId together with arrivalDate or departureDate.");
       }
 
-      List<AccommodationTypeDTO> accommodationTypes = accommodationTypeServiceImpl.getAccommodationTypes(accommodationTypeId, arrivalDate, departureDate)
-          .stream().map(AccommodationTypeDTO::new).collect(Collectors.toList());
+      if ((arrivalDate == null && departureDate != null) || (arrivalDate != null && departureDate == null)) {
+        logger.debug("Both arrival and departure dates are required to check availability.");
+        return ResponseEntity.badRequest().body("Both arrival and departure dates are required to check availability.");
+      }
 
-      logger.info("Successfully retrieved accommodation types");
+      List<AccommodationTypeDTO> accommodationTypes = accommodationTypeService.getAccommodationTypes(accommodationTypeId, arrivalDate, departureDate);
+      if (accommodationTypes.isEmpty()) {
+        logger.debug("No matching accommodation types found.");
+        return ResponseEntity.notFound().build();
+      }
       return ResponseEntity.ok(accommodationTypes);
     } catch (Exception e) {
-      logger.error("Error while processing getAccommodationTypes request", e);
-      return ResponseEntity.internalServerError().build();
+      logger.error("Error retrieving available accommodation types: {}", e.getMessage());
+      return ResponseEntity.internalServerError().body("Internal server error occurred while processing your request.");
     }
   }
 
   /**
-   * Adds a new Accommodation Type.
+   * Adds a new accommodation type.
    *
-   * @param accommodationType The Accommodation Type object to be added.
-   * @return ResponseEntity with the added AccommodationTypeDTO.
+   * @param accommodationTypeDTO DTO containing the details of the accommodation type to be added.
+   * @return ResponseEntity with the added AccommodationTypeDTO or an error message.
    */
-  @PostMapping("/addAccommodationType")
-  public ResponseEntity<AccommodationTypeDTO> addAccommodationType(@RequestBody AccommodationType accommodationType) {
+  @PostMapping
+  public ResponseEntity<?> addAccommodationType(@Valid @RequestBody AccommodationTypeDTO accommodationTypeDTO) {
     try {
-      AccommodationTypeDTO addedAccommodationType = new AccommodationTypeDTO(accommodationTypeServiceImpl.saveAccommodationType(accommodationType));
-      logger.info("Successfully added accommodation type with ID: {}", addedAccommodationType.getAccommodationTypeId());
-      return ResponseEntity.ok(addedAccommodationType);
+      AccommodationTypeDTO savedAccommodationType = accommodationTypeService.saveAccommodationType(accommodationTypeDTO);
+      return ResponseEntity.ok(savedAccommodationType);
     } catch (Exception e) {
-      logger.error("Error while processing addAccommodationType request", e);
-      return ResponseEntity.internalServerError().build();
+      logger.error("Error saving accommodation type: {}", e.getMessage());
+      return ResponseEntity.badRequest().body("Error saving accommodation type: " + e.getMessage());
     }
   }
 
   /**
-   * Updates an existing Accommodation Type.
+   * Updates an existing accommodation type by ID.
    *
-   * @param accommodationType The Accommodation Type object to be updated.
-   * @return ResponseEntity with the updated AccommodationTypeDTO.
+   * @param id The ID of the accommodation type to update.
+   * @param accommodationTypeDTO DTO with updated accommodation type details.
+   * @return ResponseEntity with the updated AccommodationTypeDTO or an error message.
    */
-  @PutMapping("/updateAccommodationType")
-  public ResponseEntity<AccommodationTypeDTO> updateAccommodationType(@RequestBody AccommodationType accommodationType) {
+  @PutMapping("/{id}")
+  public ResponseEntity<?> updateAccommodationType(@PathVariable Long id, @Valid @RequestBody AccommodationTypeDTO accommodationTypeDTO) {
     try {
-      AccommodationTypeDTO updatedAccommodationType = new AccommodationTypeDTO(accommodationTypeServiceImpl.saveAccommodationType(accommodationType));
-      logger.info("Successfully updated accommodation type with ID: {}", updatedAccommodationType.getAccommodationTypeId());
+      accommodationTypeDTO.setAccommodationTypeId(id);
+      AccommodationTypeDTO updatedAccommodationType = accommodationTypeService.saveAccommodationType(accommodationTypeDTO);
       return ResponseEntity.ok(updatedAccommodationType);
     } catch (Exception e) {
-      logger.error("Error while processing updateAccommodationType request", e);
-      return ResponseEntity.internalServerError().build();
+      logger.error("Error updating accommodation type with ID {}: {}", id, e.getMessage());
+      return ResponseEntity.badRequest().body("Error updating accommodation type: " + e.getMessage());
     }
   }
 
   /**
-   * Deletes an Accommodation Type by ID.
+   * Deletes an accommodation type by its ID.
    *
-   * @param accommodationTypeId The ID of the Accommodation Type to be deleted.
-   * @return ResponseEntity with a success message.
+   * @param id The ID of the accommodation type to be deleted.
+   * @return ResponseEntity with a success message or an error message if the accommodation type does not exist or in case of failure.
    */
-  @DeleteMapping("/deleteAccommodationTypeById")
-  public ResponseEntity<String> deleteAccommodationTypeById(@RequestParam(name = "accommodationTypeId") Long accommodationTypeId) {
+  @DeleteMapping("/{id}")
+  public ResponseEntity<?> deleteAccommodationTypeById(@PathVariable Long id) {
     try {
-      String result = accommodationTypeServiceImpl.deleteAccommodationTypeById(accommodationTypeId);
-      logger.info("Successfully deleted accommodation type with ID: {}", accommodationTypeId);
-      return ResponseEntity.ok(result);
+      accommodationTypeService.deleteAccommodationTypeById(id);
+      logger.info("Successfully deleted accommodation type with ID: {}", id);
+      return ResponseEntity.ok("Accommodation type with ID: " + id + " was successfully deleted.");
+    } catch (RuntimeException e) {
+      logger.error("Attempted to delete a non-existent accommodation type with ID: {}", id);
+      return ResponseEntity.notFound().build();
     } catch (Exception e) {
-      logger.error("Error while processing deleteAccommodationTypeById request", e);
-      return ResponseEntity.internalServerError().build();
+      logger.error("Error deleting accommodation type with ID {}: {}", id, e.getMessage());
+      return ResponseEntity.internalServerError().body("Error deleting accommodation type: " + e.getMessage());
     }
   }
 }

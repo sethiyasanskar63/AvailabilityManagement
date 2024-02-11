@@ -1,50 +1,53 @@
 package com.assignment.availabilitymanagement.service;
 
-import com.assignment.availabilitymanagement.DTO.AvailabilityDTO;
-import com.assignment.availabilitymanagement.entity.Availability;
+import com.assignment.availabilitymanagement.dto.AvailabilityDTO;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Service interface for managing availability.
- * Author: Sanskar Sethiya
+ * Service interface for managing availabilities.
+ * Provides methods to fetch, save, and delete availability records.
  */
 public interface AvailabilityService {
 
   /**
-   * Get a list of availability based on the provided parameters.
+   * Retrieves a list of availabilities based on the provided criteria. Each parameter is optional and used to filter the results.
    *
-   * @param availabilityId        ID of the availability (can be null for all availabilities)
-   * @param accommodationTypeId   ID of the accommodation type (can be null for all types)
-   * @param arrivalDate           Start date of the stay
-   * @param departureDate         End date of the stay
-   * @return List of availability
+   * @param availabilityId Optional ID of the specific availability.
+   * @param accommodationTypeId Optional ID of the accommodation type for filtering.
+   * @param arrivalDate Optional start date for the availability period.
+   * @param departureDate Optional end date for the availability period.
+   * @return A list of {@link AvailabilityDTO} matching the criteria.
    */
-  List<Availability> getAvailability(Long availabilityId, Long accommodationTypeId,
-                                     LocalDate arrivalDate, LocalDate departureDate);
+  List<AvailabilityDTO> getAvailability(Long availabilityId, Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate);
 
   /**
-   * Save availability from DTO.
+   * Saves an availability record from the provided AvailabilityDTO.
    *
-   * @param availabilityDTO DTO containing availability information
+   * @param availabilityDTO DTO containing the availability information to be saved.
    */
-  void saveAvailabilityFromDTO(AvailabilityDTO availabilityDTO);
+  AvailabilityDTO saveAvailabilityFromDTO(AvailabilityDTO availabilityDTO);
+
+  @Transactional
+  AvailabilityDTO updateAvailabilityFromDTO(AvailabilityDTO availabilityDTO);
 
   /**
-   * Save all availabilities from a workbook.
+   * Saves all availabilities contained within a provided Excel workbook.
+   * Each row in the workbook is expected to represent a single availability record.
    *
-   * @param workbook Workbook containing availability data
-   * @return Result message indicating success or failure
+   * @param workbook Excel workbook containing availability data.
+   * @return String message indicating the result of the operation, either success or an error message.
    */
   String saveAllAvailability(Workbook workbook);
 
   /**
-   * Delete availability by its ID.
+   * Deletes an availability record by its ID.
    *
-   * @param id ID of the availability to be deleted
-   * @return Result message indicating success or failure
+   * @param id The ID of the availability to be deleted.
+   * @return String message indicating the result of the deletion operation, either success or an error message.
    */
   String deleteAvailabilityById(Long id);
 }

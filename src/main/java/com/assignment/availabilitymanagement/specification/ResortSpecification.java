@@ -1,53 +1,32 @@
 package com.assignment.availabilitymanagement.specification;
 
 import com.assignment.availabilitymanagement.entity.Resort;
+import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.jpa.domain.Specification;
 
 /**
- * Specification class for filtering Resort entities.
- * Author: Sanskar Sethiya
+ * Specifications for querying Resort entities.
  */
-public class ResortSpecification implements Specification<Resort> {
-
-  private static final Logger logger = LoggerFactory.getLogger(ResortSpecification.class);
-
-  private final Long resortId;
+public class ResortSpecification {
 
   /**
-   * Constructor for creating a ResortSpecification.
+   * Specification to filter resorts by their ID.
    *
-   * @param resortId ID of the resort for filtering
+   * @param resortId The ID of the resort to filter by.
+   * @return A Specification for the Resort entity.
    */
-  public ResortSpecification(Long resortId) {
-    this.resortId = resortId;
-  }
-
-  /**
-   * Build the predicate based on the specified criteria.
-   *
-   * @param root             Root entity
-   * @param query            Criteria query
-   * @param criteriaBuilder Criteria builder
-   * @return Predicate representing the filtering criteria
-   * @throws RuntimeException if there is an error while building the predicate
-   */
-  @Override
-  public Predicate toPredicate(Root<Resort> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-    try {
-      if (resortId != null) {
+  public static Specification<Resort> hasResortId(Long resortId) {
+    return new Specification<Resort>() {
+      @Override
+      public Predicate toPredicate(Root<Resort> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+        if (resortId == null) {
+          return criteriaBuilder.isTrue(criteriaBuilder.literal(true));
+        }
         return criteriaBuilder.equal(root.get("resortId"), resortId);
-      } else {
-        return criteriaBuilder.isTrue(criteriaBuilder.literal(true));
       }
-    } catch (Exception e) {
-      logger.error("Error while building ResortSpecification predicate", e);
-      throw new RuntimeException("Error while building ResortSpecification predicate", e);
-    }
+    };
   }
 }

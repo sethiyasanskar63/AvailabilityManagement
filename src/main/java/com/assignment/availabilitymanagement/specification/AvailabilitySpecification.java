@@ -1,22 +1,20 @@
 package com.assignment.availabilitymanagement.specification;
 
 import com.assignment.availabilitymanagement.entity.Availability;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.jpa.domain.Specification;
-
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Specification class for filtering Availability entities.
- * Author: Sanskar Sethiya
+ * Specification for filtering {@link Availability} records based on various criteria.
+ * Supports filtering by availability ID, accommodation type ID, and date range.
  */
 public class AvailabilitySpecification implements Specification<Availability> {
 
@@ -24,68 +22,55 @@ public class AvailabilitySpecification implements Specification<Availability> {
 
   private final Long availabilityId;
   private final Long accommodationTypeId;
-  private final LocalDate arrivalDate;
-  private final LocalDate departureDate;
+  private final LocalDate startDate;
+  private final LocalDate endDate;
 
   /**
-   * Constructor for creating an AvailabilitySpecification.
+   * Constructs a new AvailabilitySpecification with the given criteria.
    *
-   * @param availabilityId      ID of the availability
-   * @param accommodationTypeId ID of the accommodation type for filtering
-   * @param arrivalDate         Arrival date for filtering
-   * @param departureDate       Departure date for filtering
+   * @param availabilityId Optional ID of the availability record.
+   * @param accommodationTypeId Optional ID of the associated accommodation type.
+   * @param startDate Optional start date for filtering availabilities.
+   * @param endDate Optional end date for filtering availabilities.
    */
-  public AvailabilitySpecification(Long availabilityId, Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate) {
+  public AvailabilitySpecification(Long availabilityId, Long accommodationTypeId, LocalDate startDate, LocalDate endDate) {
     this.availabilityId = availabilityId;
     this.accommodationTypeId = accommodationTypeId;
-    this.arrivalDate = arrivalDate;
-    this.departureDate = departureDate;
+    this.startDate = startDate;
+    this.endDate = endDate;
   }
 
-  /**
-   * Build the predicate based on the specified criteria.
-   *
-   * @param root             Root entity
-   * @param query            Criteria query
-   * @param criteriaBuilder Criteria builder
-   * @return Predicate representing the filtering criteria
-   * @throws RuntimeException if there is an error while building the predicate
-   */
   @Override
-  public Predicate toPredicate(Root<Availability> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-    try {
-      List<Predicate> predicates = new ArrayList<>();
-      long noOfDays = -1;
-      if (arrivalDate != null && departureDate != null) {
-        noOfDays = ChronoUnit.DAYS.between(arrivalDate, departureDate);
-      }
+  public Predicate toPredicate(Root<Availability> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+    List<Predicate> predicates = new ArrayList<>();
 
+    try {
       if (availabilityId != null) {
-        predicates.add(criteriaBuilder.equal(root.get("availabilityId"), availabilityId));
+        predicates.add(cb.equal(root.get("availabilityId"), availabilityId));
       }
 
       if (accommodationTypeId != null) {
-        predicates.add(criteriaBuilder.equal(root.get("accommodationType").get("accommodationTypeId"), accommodationTypeId));
+        predicates.add(cb.equal(root.join("accommodationType").get("id"), accommodationTypeId));
       }
 
-      if (noOfDays != -1) {
-        predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("minNight"), noOfDays));
+      if (startDate != null) {
+        predicates.add(cb.greaterThanOrEqualTo(root.get("stayFromDate"), startDate));
       }
 
-      if (arrivalDate != null) {
-        predicates.add(criteriaBuilder.and(criteriaBuilder.lessThanOrEqualTo(root.get("stayFromDate"), arrivalDate),
-            criteriaBuilder.greaterThanOrEqualTo(root.get("stayToDate"), arrivalDate)));
+      if (endDate != null) {
+        predicates.add(cb.lessThanOrEqualTo(root.get("stayToDate"), endDate));
       }
 
-      if (departureDate != null) {
-        predicates.add(criteriaBuilder.and(criteriaBuilder.lessThanOrEqualTo(root.get("stayFromDate"), departureDate),
-            criteriaBuilder.greaterThanOrEqualTo(root.get("stayToDate"), departureDate)));
+      if (predicates.isEmpty()) {
+        logger.debug("Fetching all availabilities as no specific criteria were provided.");
+      } else {
+        logger.debug("Fetching availabilities with specified criteria.");
       }
 
-      return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+      return cb.and(predicates.toArray(new Predicate[0]));
     } catch (Exception e) {
-      logger.error("Error while building AvailabilitySpecification predicate", e);
-      throw new RuntimeException("Error while building AvailabilitySpecification predicate", e);
+      logger.error("Error building specification for availability query", e);
+      throw new RuntimeException("Error building specification for availability query", e);
     }
   }
 }

@@ -1,9 +1,9 @@
 package com.assignment.availabilitymanagement.service;
 
-import com.assignment.availabilitymanagement.entity.AccommodationType;
-
+import com.assignment.availabilitymanagement.dto.AccommodationTypeDTO;
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service interface for managing accommodation types.
@@ -17,23 +17,25 @@ public interface AccommodationTypeService {
    * @param accommodationTypeId ID of the accommodation type (can be null)
    * @param arrivalDate         Arrival date criteria (can be null)
    * @param departureDate       Departure date criteria (can be null)
-   * @return List of matching accommodation types
+   * @return List of matching accommodation type DTOs
    */
-  List<AccommodationType> getAccommodationTypes(Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate);
+  @Transactional(readOnly = true)
+  List<AccommodationTypeDTO> getAccommodationTypes(Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate);
 
   /**
-   * Save or update an accommodation type.
+   * Save or update an accommodation type and return its DTO.
    *
-   * @param accommodationType Accommodation type to be saved or updated
-   * @return Saved or updated accommodation type
+   * @param accommodationTypeDTO DTO of the accommodation type to be saved or updated
+   * @return DTO of the saved or updated accommodation type
    */
-  AccommodationType saveAccommodationType(AccommodationType accommodationType);
+  @Transactional
+  AccommodationTypeDTO saveAccommodationType(AccommodationTypeDTO accommodationTypeDTO);
 
   /**
    * Delete an accommodation type by ID.
    *
    * @param id ID of the accommodation type to be deleted
-   * @return Success message or error information
    */
-  String deleteAccommodationTypeById(Long id);
+  @Transactional
+  void deleteAccommodationTypeById(Long id);
 }

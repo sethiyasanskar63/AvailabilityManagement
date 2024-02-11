@@ -1,11 +1,12 @@
 package com.assignment.availabilitymanagement.controller;
 
-import com.assignment.availabilitymanagement.DTO.AvailabilityDTO;
+import com.assignment.availabilitymanagement.dto.AvailabilityDTO;
 import com.assignment.availabilitymanagement.entity.Availability;
-import com.assignment.availabilitymanagement.serviceImpl.AvailabilityServiceImpl;
-import com.assignment.availabilitymanagement.specification.AvailabilitySpecification;
+import com.assignment.availabilitymanagement.mapper.AvailabilityMapper;
+import com.assignment.availabilitymanagement.service.AvailabilityService;
 import com.assignment.availabilitymanagement.util.AvailabilityToWorkbook;
 import com.assignment.availabilitymanagement.util.PossibleDates;
+import jakarta.validation.Valid;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,175 +29,170 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Controller class for managing Availability.
- * Author: Sanskar Sethiya
+ * Controller for managing availabilities within the application.
+ * It provides endpoints for CRUD operations on availabilities and exporting/importing availability data.
  */
 @RestController
-@RequestMapping("/availability")
+@RequestMapping("/api/availability")
 public class AvailabilityController {
 
-  private static final Logger logger = LoggerFactory.getLogger(AvailabilitySpecification.class);
+  private static final Logger logger = LoggerFactory.getLogger(AvailabilityController.class);
 
   @Autowired
-  private AvailabilityServiceImpl availabilityServiceImpl;
+  private AvailabilityService availabilityService;
+  @Autowired
+  private AvailabilityMapper availabilityMapper;
 
   /**
-   * Retrieves a list of Availability based on the provided parameters.
+   * Retrieves a list of availabilities based on optional filters.
    *
-   * @param arrivalDate         The arrival date (optional).
-   * @param departureDate       The departure date (optional).
-   * @param availabilityId      The ID of the Availability (optional).
-   * @param accommodationTypeId The ID of the Accommodation Type (optional).
-   * @return ResponseEntity with a list of AvailabilityDTO.
+   * @param arrivalDate The start date for availability search.
+   * @param departureDate The end date for availability search.
+   * @param availabilityId Specific availability ID for retrieval.
+   * @param accommodationTypeId Accommodation type ID for filtering availabilities.
+   * @return A list of AvailabilityDTO objects that match the criteria.
    */
-  @GetMapping("/getAvailability")
-  public ResponseEntity<List<AvailabilityDTO>> getAvailability(
-      @RequestParam(name = "arrivalDate", required = false)
-      @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate arrivalDate,
-      @RequestParam(name = "departureDate", required = false)
-      @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate departureDate,
-      @RequestParam(name = "availabilityId", required = false) Long availabilityId,
-      @RequestParam(name = "accommodationTypeId", required = false) Long accommodationTypeId) {
+  @GetMapping
+  public ResponseEntity<?> getAvailability(
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate arrivalDate,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
+      @RequestParam(required = false) Long availabilityId,
+      @RequestParam(required = false) Long accommodationTypeId) {
+
+    logger.debug("Fetching availabilities with given criteria.");
+    if (availabilityId != null && (arrivalDate != null || departureDate != null || accommodationTypeId != null)) {
+      logger.warn("When providing availabilityId, no other parameters should be provided.");
+      return ResponseEntity.badRequest().body("When availabilityId is provided, no other search criteria should be specified.");
+    }
 
     try {
-      List<AvailabilityDTO> availabilities = availabilityServiceImpl.getAvailability(availabilityId, accommodationTypeId, arrivalDate, departureDate)
-          .stream().map(AvailabilityDTO::new).collect(Collectors.toList());
-
-      logger.info("Successfully retrieved availability");
+      List<AvailabilityDTO> availabilities = availabilityService.getAvailability(availabilityId, accommodationTypeId, arrivalDate, departureDate);
+      if (availabilities.isEmpty()) {
+        return ResponseEntity.noContent().build();
+      }
       return ResponseEntity.ok(availabilities);
     } catch (Exception e) {
-      logger.error("Error while processing getAvailability request", e);
-      return ResponseEntity.internalServerError().build();
+      logger.error("Error fetching availabilities: {}", e.getMessage());
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching availabilities.");
     }
   }
 
+
   /**
-   * Adds a new Availability.
+   * Adds a new availability entry.
    *
-   * @param availabilityDTO The AvailabilityDTO object to be added.
-   * @return ResponseEntity with the added AvailabilityDTO.
+   * @param availabilityDTO Data transfer object containing the new availability details.
+   * @return The added availability DTO or an error message.
    */
-  @PostMapping("/addAvailability")
-  public ResponseEntity<AvailabilityDTO> addAvailability(@RequestBody AvailabilityDTO availabilityDTO) {
+  @PostMapping
+  public ResponseEntity<?> addAvailability(@Valid @RequestBody AvailabilityDTO availabilityDTO) {
     try {
-      availabilityServiceImpl.saveAvailabilityFromDTO(availabilityDTO);
-      logger.info("Successfully added availability with ID: {}", availabilityDTO.getAvailabilityId());
-      return ResponseEntity.ok(availabilityDTO);
+      AvailabilityDTO savedAvailability = availabilityService.saveAvailabilityFromDTO(availabilityDTO);
+      return ResponseEntity.ok(savedAvailability);
     } catch (Exception e) {
-      logger.error("Error while processing addAvailability request", e);
-      return ResponseEntity.internalServerError().build();
+      logger.error("Error adding availability: {}", e.getMessage());
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error adding availability.");
     }
   }
 
   /**
-   * Updates an existing Availability.
+   * Updates an existing availability.
    *
-   * @param availabilityDTO The AvailabilityDTO object to be updated.
-   * @return ResponseEntity with the updated AvailabilityDTO.
+   * @param availabilityDTO Updated availability details.
+   * @return The updated availability DTO or an error message.
    */
-  @PutMapping("/updateAvailability")
-  public ResponseEntity<AvailabilityDTO> updateAvailability(@RequestBody AvailabilityDTO availabilityDTO) {
+  @PutMapping("/{id}")
+  public ResponseEntity<?> updateAvailability(@PathVariable Long id, @Valid @RequestBody AvailabilityDTO availabilityDTO) {
     try {
-      availabilityServiceImpl.saveAvailabilityFromDTO(availabilityDTO);
-      logger.info("Successfully updated availability with ID: {}", availabilityDTO.getAvailabilityId());
-      return ResponseEntity.ok(availabilityDTO);
+      availabilityDTO.setAvailabilityId(id);
+      AvailabilityDTO updatedAvailability = availabilityService.updateAvailabilityFromDTO(availabilityDTO);
+      return ResponseEntity.ok(updatedAvailability);
     } catch (Exception e) {
-      logger.error("Error while processing updateAvailability request", e);
-      return ResponseEntity.internalServerError().build();
+      logger.error("Error updating availability: {}", e.getMessage());
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating availability.");
     }
   }
 
   /**
-   * Deletes an Availability by ID.
+   * Deletes an availability by its ID.
    *
-   * @param availabilityId The ID of the Availability to be deleted.
-   * @return ResponseEntity with a success message.
+   * @param id The ID of the availability to delete.
+   * @return Success message or an error response.
    */
-  @DeleteMapping("/deleteAvailabilityById")
-  public ResponseEntity<String> deleteAvailabilityById(@RequestParam(name = "availabilityId") Long availabilityId) {
+  @DeleteMapping("/{id}")
+  public ResponseEntity<?> deleteAvailabilityById(@PathVariable Long id) {
+    logger.debug("Deleting availability with ID: {}", id);
     try {
-      String result = availabilityServiceImpl.deleteAvailabilityById(availabilityId);
-      logger.info("Successfully deleted availability with ID: {}", availabilityId);
-      return ResponseEntity.ok(result);
+      availabilityService.deleteAvailabilityById(id);
+      return ResponseEntity.ok("Availability deleted successfully.");
     } catch (Exception e) {
-      logger.error("Error while processing deleteAvailabilityById request", e);
-      return ResponseEntity.internalServerError().build();
+      logger.error("Error deleting availability: {}", e.getMessage());
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Availability not found or already deleted.");
     }
   }
 
   /**
-   * Downloads an Availability workbook.
+   * Handles the upload of availability data from an Excel file.
    *
-   * @return ResponseEntity with a ByteArrayResource containing the workbook.
+   * @param file The uploaded file containing availability data.
+   * @return Success message or an error response.
    */
-  @GetMapping(path = "/downloadAvailability")
-  public ResponseEntity<ByteArrayResource> downloadAvailability() {
-    try {
-      Workbook workbook = AvailabilityToWorkbook.getAvailabilityWorkbook(availabilityServiceImpl.getAvailability(null, null, null, null));
+  @PostMapping("/upload")
+  public ResponseEntity<?> uploadAvailability(@RequestParam("file") MultipartFile file) {
+    logger.debug("Uploading availability data from file.");
+    try (InputStream inputStream = file.getInputStream()) {
+      Workbook workbook = new XSSFWorkbook(inputStream);
+      String message = availabilityService.saveAllAvailability(workbook);
+      return ResponseEntity.ok(message);
+    } catch (Exception e) {
+      logger.error("Error uploading availability: {}", e.getMessage());
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading availability.");
+    }
+  }
 
+  /**
+   * Downloads the current availability data as an Excel file.
+   *
+   * @return The Excel file containing availability data.
+   */
+  @GetMapping("/download")
+  public ResponseEntity<?> downloadAvailability() {
+    logger.debug("Downloading availability data as Excel file.");
+    try {
+      Workbook workbook = AvailabilityToWorkbook.getAvailabilityWorkbook(availabilityService.getAvailability(null,null,null,null).stream().map(availabilityMapper::toEntity).collect(Collectors.toList()));
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       workbook.write(outputStream);
-      workbook.close();
+      byte[] bytes = outputStream.toByteArray();
 
-      byte[] excelBytes = outputStream.toByteArray();
-      ByteArrayResource resource = new ByteArrayResource(excelBytes);
-
-      logger.info("Successfully downloaded availability workbook");
       return ResponseEntity.ok()
-          .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=availability.xlsx")
-          .contentLength(resource.contentLength())
-          .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
-          .body(resource);
+          .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=availability.xlsx")
+          .contentType(MediaType.APPLICATION_OCTET_STREAM)
+          .body(new ByteArrayResource(bytes));
     } catch (Exception e) {
-      logger.error("Error while processing downloadAvailability request", e);
-      return ResponseEntity.internalServerError().build();
+      logger.error("Error downloading availability: {}", e.getMessage());
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error downloading availability.");
     }
   }
 
   /**
-   * Uploads an Availability workbook.
+   * Retrieves possible dates for availability based on accommodation type and year.
    *
-   * @param file The MultipartFile containing the workbook.
-   * @return ResponseEntity with a success message.
+   * @param accommodationTypeId The accommodation type ID.
+   * @param year The year for which to find available dates.
+   * @return A list of possible dates or an error message.
    */
-  @PostMapping("/uploadAvailability")
-  public ResponseEntity<String> uploadAvailability(@RequestParam("file") MultipartFile file) {
+  @GetMapping("/getPossibleDates")
+  public ResponseEntity<?> getPossibleDatesByAccommodationTypeId(
+      @RequestParam Long accommodationTypeId,
+      @RequestParam Integer year) {
+    logger.debug("Fetching possible dates for accommodationTypeId: {} for year: {}", accommodationTypeId, year);
     try {
-      Workbook workbook = new XSSFWorkbook();
-
-      try (InputStream inputStream = file.getInputStream()) {
-        workbook = new XSSFWorkbook(inputStream);
-      }
-
-      String result = availabilityServiceImpl.saveAllAvailability(workbook);
-      logger.info("Successfully uploaded availability workbook");
-      return ResponseEntity.ok(result);
-    } catch (Exception e) {
-      logger.error("Error while processing uploadAvailability request", e);
-      return ResponseEntity.internalServerError().build();
-    }
-  }
-
-  /**
-   * Retrieves possible dates for a given Accommodation Type and year.
-   *
-   * @param accommodationTypeId The ID of the Accommodation Type.
-   * @param year                The year for which to retrieve possible dates.
-   * @return ResponseEntity with a list of possible dates.
-   */
-  @GetMapping("/getPossibleDatesByAccommodationTypeId")
-  public ResponseEntity<List<Map<String, Object>>> getPossibleDatesByAccommodationTypeId(
-      @RequestParam(name = "accommodationTypeId") Long accommodationTypeId,
-      @RequestParam(name = "year") Integer year) {
-
-    try {
-      List<Availability> availabilities = availabilityServiceImpl.getAvailability(null, accommodationTypeId, null, null);
+      List<Availability> availabilities = availabilityService.getAvailability(null,accommodationTypeId,null,null).stream().map(availabilityMapper::toEntity).collect(Collectors.toList());
       List<Map<String, Object>> possibleDates = PossibleDates.getPossibleDatesByAccommodationTypeId(year, availabilities);
-      logger.info("Successfully retrieved possible dates by accommodationTypeId");
       return ResponseEntity.ok(possibleDates);
     } catch (Exception e) {
-      logger.error("Error while processing getPossibleDatesByAccommodationTypeId request", e);
-      return ResponseEntity.internalServerError().build();
+      logger.error("Error fetching possible dates: {}", e.getMessage());
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching possible dates.");
     }
   }
 }
