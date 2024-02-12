@@ -2,7 +2,6 @@ package com.assignment.availabilitymanagement.controller;
 
 import com.assignment.availabilitymanagement.dto.AvailabilityDTO;
 import com.assignment.availabilitymanagement.service.AvailabilityService;
-import com.assignment.availabilitymanagement.mapper.AvailabilityMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -112,7 +111,7 @@ class AvailabilityControllerTest {
         .stayFromDate(LocalDate.parse("2024-09-01"))
         .stayToDate(LocalDate.parse("2024-09-30"))
         .arrivalDays(new int[]{1, 5, 6, 7})
-        .departureDays(new int[]{1,5,7})
+        .departureDays(new int[]{1, 5, 7})
         .build();
     AvailabilityDTO availabilityDTO10 = AvailabilityDTO.builder()
         .accommodationTypeId(1L)
@@ -140,7 +139,7 @@ class AvailabilityControllerTest {
         .arrivalDays(new int[]{1, 2, 3, 7})
         .departureDays(new int[]{7})
         .build();
-    mockAvailabilities = Arrays.asList(availabilityDTO1, availabilityDTO2,availabilityDTO3,availabilityDTO4,availabilityDTO5,availabilityDTO6,availabilityDTO7,availabilityDTO8,availabilityDTO9,availabilityDTO10,availabilityDTO11,availabilityDTO12);
+    mockAvailabilities = Arrays.asList(availabilityDTO1, availabilityDTO2, availabilityDTO3, availabilityDTO4, availabilityDTO5, availabilityDTO6, availabilityDTO7, availabilityDTO8, availabilityDTO9, availabilityDTO10, availabilityDTO11, availabilityDTO12);
     when(availabilityService.getAvailability(any(), any(), any(), any())).thenReturn(mockAvailabilities);
     lenient().when(availabilityService.getAvailability(any(), any(), any(), any()))
         .thenReturn(mockAvailabilities);
@@ -175,7 +174,7 @@ class AvailabilityControllerTest {
   @Test
   void whenAccommodationTypeIdProvided_getAllAvailabilityForAccommodationType() {
     Long accommodationTypeId = 1L;
-    when(availabilityService.getAvailability(null, accommodationTypeId, null, null)).thenReturn( mockAvailabilities.stream().filter(a -> a.getAccommodationTypeId().equals(accommodationTypeId)).collect(Collectors.toList()));
+    when(availabilityService.getAvailability(null, accommodationTypeId, null, null)).thenReturn(mockAvailabilities.stream().filter(a -> a.getAccommodationTypeId().equals(accommodationTypeId)).collect(Collectors.toList()));
 
     ResponseEntity<?> response = availabilityController.getAvailability(null, null, null, accommodationTypeId);
 

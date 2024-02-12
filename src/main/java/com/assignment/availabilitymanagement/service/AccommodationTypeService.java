@@ -1,9 +1,10 @@
 package com.assignment.availabilitymanagement.service;
 
 import com.assignment.availabilitymanagement.dto.AccommodationTypeDTO;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDate;
 import java.util.List;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service interface for managing accommodation types.

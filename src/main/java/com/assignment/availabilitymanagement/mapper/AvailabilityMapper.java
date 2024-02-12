@@ -22,7 +22,7 @@ public abstract class AvailabilityMapper {
    * Converts the accommodation type ID from the {@link AvailabilityDTO} to an {@link AccommodationType} entity and sets it on the {@link Availability} entity before mapping.
    * This method is called automatically by MapStruct before the main mapping logic.
    *
-   * @param dto The source {@link AvailabilityDTO}.
+   * @param dto    The source {@link AvailabilityDTO}.
    * @param entity The target {@link Availability} entity.
    * @throws IllegalArgumentException if the accommodation type ID in the DTO does not correspond to any existing {@link AccommodationType}.
    */

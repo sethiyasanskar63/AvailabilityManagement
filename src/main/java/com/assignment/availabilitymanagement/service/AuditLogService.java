@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Service interface for managing audit logs.
  * Provides functionality to add and retrieve audit log entries.
- *
+ * <p>
  * Author: Sanskar Sethiya
  */
 public interface AuditLogService {
@@ -26,8 +26,8 @@ public interface AuditLogService {
    * a specific log entry. Date parameters are used to find logs within a specified date range.
    *
    * @param auditLogId An optional ID of the audit log to retrieve a specific log entry.
-   * @param startDate The start date of the period for which logs should be retrieved; null means unbounded start date.
-   * @param endDate The end date of the period for which logs should be retrieved; null means unbounded end date.
+   * @param startDate  The start date of the period for which logs should be retrieved; null means unbounded start date.
+   * @param endDate    The end date of the period for which logs should be retrieved; null means unbounded end date.
    * @return A list of {@link AuditLogDTO} objects that match the criteria.
    */
   List<AuditLogDTO> getLogs(Long auditLogId, LocalDate startDate, LocalDate endDate);

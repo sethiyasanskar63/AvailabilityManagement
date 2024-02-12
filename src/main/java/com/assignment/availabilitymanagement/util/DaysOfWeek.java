@@ -12,8 +12,6 @@ import java.util.Arrays;
  */
 public class DaysOfWeek {
 
-  private static final Logger logger = LoggerFactory.getLogger(DaysOfWeek.class);
-
   public static final int MONDAY = 1;
   public static final int TUESDAY = 2;
   public static final int WEDNESDAY = 3;
@@ -21,6 +19,7 @@ public class DaysOfWeek {
   public static final int FRIDAY = 5;
   public static final int SATURDAY = 6;
   public static final int SUNDAY = 7;
+  private static final Logger logger = LoggerFactory.getLogger(DaysOfWeek.class);
 
   /**
    * Converts an array of days into a bitmask representing the selection of days.

@@ -21,7 +21,7 @@ public class PossibleDates {
   /**
    * Calculates all possible combinations of arrival and departure dates for a given accommodation type within a specified year.
    *
-   * @param year The year for which to calculate possible dates.
+   * @param year           The year for which to calculate possible dates.
    * @param availabilities A list of {@link Availability} objects representing the available periods and constraints for booking.
    * @return A list of maps, each containing an accommodation type ID, arrival date, and departure date.
    */
@@ -52,7 +52,7 @@ public class PossibleDates {
   /**
    * Checks if a given date can be considered as a possible arrival date based on the specified availabilities.
    *
-   * @param currentDate The date to check.
+   * @param currentDate    The date to check.
    * @param availabilities A list of {@link Availability} objects with booking constraints.
    * @return {@code true} if the date is a possible arrival date; {@code false} otherwise.
    */
@@ -79,8 +79,8 @@ public class PossibleDates {
   /**
    * Checks if a given date range can be considered as a possible departure date based on the specified availabilities.
    *
-   * @param currentDate The potential arrival date.
-   * @param departureDate The date to check as a potential departure date.
+   * @param currentDate    The potential arrival date.
+   * @param departureDate  The date to check as a potential departure date.
    * @param availabilities A list of {@link Availability} objects with booking constraints.
    * @return {@code true} if the date range is a possible booking period; {@code false} otherwise.
    */

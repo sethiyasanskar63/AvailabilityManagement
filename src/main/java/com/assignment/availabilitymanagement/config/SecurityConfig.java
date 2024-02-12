@@ -2,6 +2,8 @@ package com.assignment.availabilitymanagement.config;
 
 import com.assignment.availabilitymanagement.security.JwtFilter;
 import com.assignment.availabilitymanagement.security.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,8 +21,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Configuration class for security settings.
@@ -48,7 +48,7 @@ public class SecurityConfig {
     try {
       return httpSecurity.csrf(AbstractHttpConfigurer::disable)
           .authorizeHttpRequests(auth -> auth
-              .requestMatchers("/auth/login", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**","/error")
+              .requestMatchers("/auth/login", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/error")
               .permitAll()
               .anyRequest().authenticated())
           .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

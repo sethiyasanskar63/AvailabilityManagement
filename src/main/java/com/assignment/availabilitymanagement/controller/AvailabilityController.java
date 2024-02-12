@@ -46,9 +46,9 @@ public class AvailabilityController {
   /**
    * Retrieves a list of availabilities based on optional filters.
    *
-   * @param arrivalDate The start date for availability search.
-   * @param departureDate The end date for availability search.
-   * @param availabilityId Specific availability ID for retrieval.
+   * @param arrivalDate         The start date for availability search.
+   * @param departureDate       The end date for availability search.
+   * @param availabilityId      Specific availability ID for retrieval.
    * @param accommodationTypeId Accommodation type ID for filtering availabilities.
    * @return A list of AvailabilityDTO objects that match the criteria.
    */
@@ -159,7 +159,7 @@ public class AvailabilityController {
   public ResponseEntity<?> downloadAvailability() {
     logger.debug("Downloading availability data as Excel file.");
     try {
-      Workbook workbook = AvailabilityToWorkbook.getAvailabilityWorkbook(availabilityService.getAvailability(null,null,null,null).stream().map(availabilityMapper::toEntity).collect(Collectors.toList()));
+      Workbook workbook = AvailabilityToWorkbook.getAvailabilityWorkbook(availabilityService.getAvailability(null, null, null, null).stream().map(availabilityMapper::toEntity).collect(Collectors.toList()));
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       workbook.write(outputStream);
       byte[] bytes = outputStream.toByteArray();
@@ -178,7 +178,7 @@ public class AvailabilityController {
    * Retrieves possible dates for availability based on accommodation type and year.
    *
    * @param accommodationTypeId The accommodation type ID.
-   * @param year The year for which to find available dates.
+   * @param year                The year for which to find available dates.
    * @return A list of possible dates or an error message.
    */
   @GetMapping("/getPossibleDates")
@@ -187,7 +187,7 @@ public class AvailabilityController {
       @RequestParam Integer year) {
     logger.debug("Fetching possible dates for accommodationTypeId: {} for year: {}", accommodationTypeId, year);
     try {
-      List<Availability> availabilities = availabilityService.getAvailability(null,accommodationTypeId,null,null).stream().map(availabilityMapper::toEntity).collect(Collectors.toList());
+      List<Availability> availabilities = availabilityService.getAvailability(null, accommodationTypeId, null, null).stream().map(availabilityMapper::toEntity).collect(Collectors.toList());
       List<Map<String, Object>> possibleDates = PossibleDates.getPossibleDatesByAccommodationTypeId(year, availabilities);
       return ResponseEntity.ok(possibleDates);
     } catch (Exception e) {

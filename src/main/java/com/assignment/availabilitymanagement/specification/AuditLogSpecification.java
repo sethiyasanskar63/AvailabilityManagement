@@ -1,14 +1,14 @@
 package com.assignment.availabilitymanagement.specification;
 
 import com.assignment.availabilitymanagement.entity.AuditLog;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.jpa.domain.Specification;
-
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.jpa.domain.Specification;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,9 +28,9 @@ public class AuditLogSpecification implements Specification<AuditLog> {
   /**
    * Constructs a new AuditLogSpecification with the specified filters.
    *
-   * @param auditLogId  The ID of the audit log to filter by (nullable).
-   * @param startDate   The start date of the range to filter by (nullable).
-   * @param endDate     The end date of the range to filter by (nullable).
+   * @param auditLogId The ID of the audit log to filter by (nullable).
+   * @param startDate  The start date of the range to filter by (nullable).
+   * @param endDate    The end date of the range to filter by (nullable).
    */
   public AuditLogSpecification(Long auditLogId, LocalDate startDate, LocalDate endDate) {
     this.auditLogId = auditLogId;
@@ -41,10 +41,10 @@ public class AuditLogSpecification implements Specification<AuditLog> {
   /**
    * Builds the predicate for querying audit logs based on the specified filters.
    *
-   * @param root    The root of the query.
-   * @param query   The criteria query.
-   * @param cb      The criteria builder.
-   * @return        The predicate for filtering the query.
+   * @param root  The root of the query.
+   * @param query The criteria query.
+   * @param cb    The criteria builder.
+   * @return The predicate for filtering the query.
    */
   @Override
   public Predicate toPredicate(Root<AuditLog> root, CriteriaQuery<?> query, CriteriaBuilder cb) {

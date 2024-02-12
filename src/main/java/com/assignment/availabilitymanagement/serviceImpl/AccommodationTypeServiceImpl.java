@@ -35,8 +35,8 @@ public class AccommodationTypeServiceImpl implements AccommodationTypeService {
    * Retrieves accommodation types based on the given criteria.
    *
    * @param accommodationTypeId Optional ID for filtering a specific accommodation type.
-   * @param arrivalDate Optional start date for availability filtering.
-   * @param departureDate Optional end date for availability filtering.
+   * @param arrivalDate         Optional start date for availability filtering.
+   * @param departureDate       Optional end date for availability filtering.
    * @return A list of {@link AccommodationTypeDTO} that match the criteria.
    */
   @Override
