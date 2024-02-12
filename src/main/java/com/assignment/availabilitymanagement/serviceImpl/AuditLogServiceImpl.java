@@ -9,14 +9,14 @@ import com.assignment.availabilitymanagement.specification.AuditLogSpecification
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of the AuditLogService interface, providing methods to manage audit logs.
@@ -42,7 +42,7 @@ public class AuditLogServiceImpl implements AuditLogService {
   public void saveLogs(AuditLogDTO auditLogDTO) {
     try {
       AuditLog auditLog = auditLogMapper.toEntity(auditLogDTO);
-      AuditLog savedAuditLog = auditLogRepository.save(auditLog);
+      AuditLog savedAuditLog = auditLogRepository.saveAndFlush(auditLog);
       logger.debug("Audit log saved successfully: {}", auditLog.getLogId());
       auditLogMapper.toDto(savedAuditLog);
     } catch (Exception e) {
@@ -52,26 +52,26 @@ public class AuditLogServiceImpl implements AuditLogService {
   }
 
   /**
-   * Retrieves audit logs based on the given criteria.
+   * Retrieves a paginated list of audit logs based on the provided criteria.
    *
-   * @param auditLogId Optional ID of the audit log for specific retrieval.
-   * @param startDate  Optional start date for filtering logs from this date.
-   * @param endDate    Optional end date for filtering logs up to this date.
-   * @return A list of audit log entries that match the criteria.
+   * @param auditLogId Optional ID of the specific audit log to retrieve.
+   * @param startDate  Optional start date to filter the logs by their creation or event date.
+   * @param endDate    Optional end date to filter the logs by their creation or event date.
+   * @param pageable   {@link Pageable} object containing pagination and sorting information.
+   * @return A {@link Page} of {@link AuditLogDTO} objects matching the criteria.
    */
   @Override
   @Transactional(readOnly = true)
-  public List<AuditLogDTO> getLogs(Long auditLogId, LocalDate startDate, LocalDate endDate) {
+  public Page<AuditLogDTO> getLogs(Long auditLogId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
     try {
       Specification<AuditLog> specification = new AuditLogSpecification(auditLogId, startDate, endDate);
-      List<AuditLog> auditLogs = auditLogRepository.findAll(specification);
-      logger.debug("Retrieved {} audit logs based on the given criteria.", auditLogs.size());
-      return auditLogs.stream()
-          .map(auditLogMapper::toDto)
-          .collect(Collectors.toList());
+      Page<AuditLog> auditLogs = auditLogRepository.findAll(specification, pageable);
+      logger.debug("Retrieved a page of audit logs based on the given criteria.");
+      return auditLogs.map(auditLogMapper::toDto);
     } catch (Exception e) {
       logger.error("Error while retrieving audit logs: ", e);
       throw new RuntimeException("Failed to retrieve audit logs: " + e.getMessage(), e);
     }
   }
+
 }

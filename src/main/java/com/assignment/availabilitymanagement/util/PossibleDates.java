@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -21,17 +22,16 @@ public class PossibleDates {
   /**
    * Calculates all possible combinations of arrival and departure dates for a given accommodation type within a specified year.
    *
-   * @param year           The year for which to calculate possible dates.
    * @param availabilities A list of {@link Availability} objects representing the available periods and constraints for booking.
    * @return A list of maps, each containing an accommodation type ID, arrival date, and departure date.
    */
-  public static List<Map<String, Object>> getPossibleDatesByAccommodationTypeId(Integer year, List<Availability> availabilities) {
+  public static List<Map<String, Object>> getPossibleDatesByAccommodationTypeId(List<Availability> availabilities) {
     List<Map<String, Object>> possibleDates = new ArrayList<>();
 
     try {
-      for (LocalDate currentDate = LocalDate.of(year, 1, 1); !currentDate.isAfter(LocalDate.of(year, 12, 31)); currentDate = currentDate.plusDays(1)) {
+      for (LocalDate currentDate = LocalDate.now(); !currentDate.isAfter(LocalDate.now().plusYears(1)); currentDate = currentDate.plusDays(1)) {
         if (isPossibleArrivalDate(currentDate, availabilities)) {
-          for (LocalDate departureDate = currentDate.plusDays(1); !departureDate.isAfter(LocalDate.of(year, 12, 31)); departureDate = departureDate.plusDays(1)) {
+          for (LocalDate departureDate = currentDate.plusDays(1); !departureDate.isAfter(LocalDate.now().plusYears(1)) && Period.between(currentDate, departureDate).getDays() < 30; departureDate = departureDate.plusDays(1)) {
             if (isPossibleDepartureDate(currentDate, departureDate, availabilities)) {
               Map<String, Object> entry = new HashMap<>();
               entry.put("AccommodationTypeId", availabilities.get(0).getAccommodationType().getAccommodationTypeId());
@@ -68,8 +68,7 @@ public class PossibleDates {
           return Arrays.stream(DaysOfWeek.getSelectedDays(availability.getArrivalDays())).anyMatch(day -> day == dayOfWeek);
         }
       }
-      Availability defaultAvailability = createDefaultAvailability();
-      return Arrays.stream(DaysOfWeek.getSelectedDays(defaultAvailability.getArrivalDays())).anyMatch(day -> day == dayOfWeek);
+      return false;
     } catch (Exception e) {
       logger.error("Error while checking possible arrival date", e);
       throw new RuntimeException("Error while checking possible arrival date", e);
@@ -96,29 +95,10 @@ public class PossibleDates {
           return Arrays.stream(DaysOfWeek.getSelectedDays(availability.getDepartureDays())).anyMatch(day -> day == dayOfWeek) && ChronoUnit.DAYS.between(currentDate, departureDate) >= availability.getMinNight() - 1;
         }
       }
-      Availability defaultAvailability = createDefaultAvailability();
-      return Arrays.stream(DaysOfWeek.getSelectedDays(defaultAvailability.getDepartureDays())).anyMatch(day -> day == dayOfWeek) && ChronoUnit.DAYS.between(currentDate, departureDate) >= defaultAvailability.getMinNight() - 1;
+      return false;
     } catch (Exception e) {
       logger.error("Error while checking possible departure date", e);
       throw new RuntimeException("Error while checking possible departure date", e);
-    }
-  }
-
-  /**
-   * Creates a default {@link Availability} object to use when specific availabilities are not applicable.
-   *
-   * @return A default {@link Availability} object.
-   */
-  private static Availability createDefaultAvailability() {
-    try {
-      Availability defaultAvailability = new Availability();
-      defaultAvailability.setArrivalDays(DaysOfWeek.setDays(DaysOfWeek.MONDAY, DaysOfWeek.TUESDAY, DaysOfWeek.WEDNESDAY, DaysOfWeek.THURSDAY, DaysOfWeek.FRIDAY, DaysOfWeek.SATURDAY, DaysOfWeek.SUNDAY));
-      defaultAvailability.setDepartureDays(DaysOfWeek.setDays(DaysOfWeek.MONDAY, DaysOfWeek.TUESDAY, DaysOfWeek.WEDNESDAY, DaysOfWeek.THURSDAY, DaysOfWeek.FRIDAY, DaysOfWeek.SATURDAY, DaysOfWeek.SUNDAY));
-      defaultAvailability.setMinNight(0);
-      return defaultAvailability;
-    } catch (Exception e) {
-      logger.error("Error while creating default availability", e);
-      throw new RuntimeException("Error while creating default availability", e);
     }
   }
 }
