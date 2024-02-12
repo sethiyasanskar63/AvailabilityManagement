@@ -16,10 +16,10 @@ public interface AvailabilityService {
   /**
    * Retrieves a list of availabilities based on the provided criteria. Each parameter is optional and used to filter the results.
    *
-   * @param availabilityId Optional ID of the specific availability.
+   * @param availabilityId      Optional ID of the specific availability.
    * @param accommodationTypeId Optional ID of the accommodation type for filtering.
-   * @param arrivalDate Optional start date for the availability period.
-   * @param departureDate Optional end date for the availability period.
+   * @param arrivalDate         Optional start date for the availability period.
+   * @param departureDate       Optional end date for the availability period.
    * @return A list of {@link AvailabilityDTO} matching the criteria.
    */
   List<AvailabilityDTO> getAvailability(Long availabilityId, Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate);

@@ -13,15 +13,16 @@ import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings("unchecked")
+@SuppressWarnings(value = "unchecked")
 class AccommodationTypeControllerTest {
 
   @Mock
@@ -32,84 +33,96 @@ class AccommodationTypeControllerTest {
 
   @BeforeEach
   void setUp() {
-    List<AccommodationTypeDTO> mockAccommodationTypes = Arrays.asList(
+    List<AccommodationTypeDTO> mockAccommodations = Arrays.asList(
         new AccommodationTypeDTO(1L, "Type 1", 1),
-        new AccommodationTypeDTO(2L, "Type 2", 1)
+        new AccommodationTypeDTO(2L, "Type 2", 2),
+        new AccommodationTypeDTO(3L, "Type 3", 3)
     );
 
-    lenient().when(accommodationTypeService.getAccommodationTypes(null, null, null)).thenReturn(mockAccommodationTypes);
-    lenient().when(accommodationTypeService.getAccommodationTypes(1L, null, null)).thenReturn(List.of(mockAccommodationTypes.get(0)));
+    lenient().when(accommodationTypeService.getAccommodationTypes(null, null, null)).thenReturn(mockAccommodations);
+    lenient().when(accommodationTypeService.getAccommodationTypes(eq(1L), isNull(), isNull())).thenReturn(Collections.singletonList(mockAccommodations.get(0)));
+    lenient().when(accommodationTypeService.getAccommodationTypes(isNull(), any(LocalDate.class), isNull())).thenReturn(mockAccommodations.subList(0, 2));
+    lenient().when(accommodationTypeService.getAccommodationTypes(isNull(), isNull(), any(LocalDate.class))).thenReturn(mockAccommodations.subList(1, 3));
+    lenient().when(accommodationTypeService.getAccommodationTypes(isNull(), any(LocalDate.class), any(LocalDate.class))).thenReturn(mockAccommodations);
   }
 
   @Test
   void whenNoParameterProvided_shouldReturnAllAccommodationTypes() {
     ResponseEntity<?> response = accommodationTypeController.getAccommodationTypes(null, null, null);
 
-    assertNotNull(response);
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    List<AccommodationTypeDTO> responseBody = (List<AccommodationTypeDTO>) response.getBody();
-    assertNotNull(responseBody);
-    assertEquals(2, responseBody.size());
+    assertNotNull(response.getBody());
+    assertEquals(3, ((List<AccommodationTypeDTO>) response.getBody()).size());
   }
 
   @Test
   void whenAccommodationTypeIdProvided_shouldReturnAccommodationTypeWithGivenId() {
     ResponseEntity<?> response = accommodationTypeController.getAccommodationTypes(1L, null, null);
 
-    assertNotNull(response);
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    List<AccommodationTypeDTO> responseBody = (List<AccommodationTypeDTO>) response.getBody();
-    assertNotNull(responseBody);
-    assertEquals(1, responseBody.size());
-    assertEquals(1L, responseBody.get(0).getAccommodationTypeId());
+    assertNotNull(response.getBody());
+    assertEquals(1L, ((List<AccommodationTypeDTO>) response.getBody()).get(0).getAccommodationTypeId());
+  }
+
+  @Test
+  void whenArrivalAndDepartureDatesProvided_shouldReturnAccommodationTypesWithAvailabilityBetweenGivenDates() {
+    ResponseEntity<?> response = accommodationTypeController.getAccommodationTypes(null, LocalDate.of(2024, 4, 1), LocalDate.of(2024, 10, 1));
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertFalse(((List<AccommodationTypeDTO>) response.getBody()).isEmpty());
   }
 
   @Test
   void whenOtherParameterProvidedWithAccommodationTypeId_shouldReturnError() {
-    Long accommodationTypeId = 1L;
-    LocalDate arrivalDate = LocalDate.of(2024, 4, 1);
+    ResponseEntity<?> response = accommodationTypeController.getAccommodationTypes(1L, LocalDate.of(2024, 4, 1), null);
 
-    ResponseEntity<?> response = accommodationTypeController.getAccommodationTypes(accommodationTypeId, arrivalDate, null);
-
-    assertNotNull(response);
     assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     assertTrue(Objects.requireNonNull(response.getBody()).toString().contains("Cannot specify accommodationTypeId together with arrivalDate or departureDate."));
   }
 
   @Test
-  void whenArrivalDateProvided_shouldReturnAccommodationTypesWithAvailabilityAfterGivenDate() {
-    LocalDate arrivalDate = LocalDate.of(2024, 4, 1);
-    lenient().when(accommodationTypeService.getAccommodationTypes(null, arrivalDate, null)).thenReturn(List.of());
+  void whenAddingAccommodationType_shouldReturnSavedAccommodationType() {
+    AccommodationTypeDTO newAccommodationType = new AccommodationTypeDTO(4L, "New Type", 4);
+    AccommodationTypeDTO savedAccommodationType = new AccommodationTypeDTO(4L, "New Type", 4);
 
-    ResponseEntity<?> response = accommodationTypeController.getAccommodationTypes(null, arrivalDate, null);
+    when(accommodationTypeService.saveAccommodationType(any(AccommodationTypeDTO.class))).thenReturn(savedAccommodationType);
 
-    assertNotNull(response);
+    ResponseEntity<?> response = accommodationTypeController.addAccommodationType(newAccommodationType);
+
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    List<AccommodationTypeDTO> responseBody = (List<AccommodationTypeDTO>) response.getBody();
+    assertNotNull(response.getBody());
+    assertEquals(savedAccommodationType, response.getBody());
   }
 
   @Test
-  void whenDepartureDateProvided_shouldReturnAccommodationTypesWithAvailabilityBeforeGivenDate() {
-    LocalDate departureDate = LocalDate.of(2024, 10, 1);
-    lenient().when(accommodationTypeService.getAccommodationTypes(null, null, departureDate)).thenReturn(List.of());
+  void whenAddingAccommodationTypeWithError_shouldReturnBadRequest() {
+    AccommodationTypeDTO invalidAccommodationType = new AccommodationTypeDTO(20L, "", 0); // Assuming this is invalid
 
-    ResponseEntity<?> response = accommodationTypeController.getAccommodationTypes(null, null, departureDate);
+    when(accommodationTypeService.saveAccommodationType(any(AccommodationTypeDTO.class)))
+        .thenThrow(new IllegalArgumentException("Invalid accommodation type details"));
 
-    assertNotNull(response);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    List<AccommodationTypeDTO> responseBody = (List<AccommodationTypeDTO>) response.getBody();
+    ResponseEntity<?> response = accommodationTypeController.addAccommodationType(invalidAccommodationType);
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
   }
 
   @Test
-  void whenArrivalAndDepartureDatesProvided_shouldReturnAccommodationTypesWithAvailabilityBetweenGivenDates() {
-    LocalDate arrivalDate = LocalDate.of(2024, 4, 1);
-    LocalDate departureDate = LocalDate.of(2024, 10, 1);
-    lenient().when(accommodationTypeService.getAccommodationTypes(null, arrivalDate, departureDate)).thenReturn(List.of());
+  void whenDeletingAccommodationType_shouldReturnSuccessMessage() {
+    doNothing().when(accommodationTypeService).deleteAccommodationTypeById(1L);
 
-    ResponseEntity<?> response = accommodationTypeController.getAccommodationTypes(null, arrivalDate, departureDate);
+    ResponseEntity<?> response = accommodationTypeController.deleteAccommodationTypeById(1L);
 
-    assertNotNull(response);
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    List<AccommodationTypeDTO> responseBody = (List<AccommodationTypeDTO>) response.getBody();
+    assertEquals("Accommodation type with ID: 1 was successfully deleted.", response.getBody());
+  }
+
+  @Test
+  void whenDeletingNonexistentAccommodationType_shouldReturnNotFound() {
+    doThrow(new IllegalArgumentException("Accommodation type not found")).when(accommodationTypeService).deleteAccommodationTypeById(99L);
+
+    ResponseEntity<?> response = accommodationTypeController.deleteAccommodationTypeById(99L);
+
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
   }
 }

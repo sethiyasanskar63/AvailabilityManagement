@@ -32,8 +32,8 @@ public class AuditLogController {
    * Retrieves audit logs optionally filtered by audit log ID, start date, or end date.
    *
    * @param auditLogId Optional ID of the audit log for specific retrieval.
-   * @param startDate Optional start date for filtering logs from this date onwards.
-   * @param endDate Optional end date for filtering logs up to this date.
+   * @param startDate  Optional start date for filtering logs from this date onwards.
+   * @param endDate    Optional end date for filtering logs up to this date.
    * @return A {@link ResponseEntity} containing the list of {@link AuditLogDTO} or an appropriate error response.
    */
   @GetMapping

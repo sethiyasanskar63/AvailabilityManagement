@@ -2,6 +2,7 @@ package com.assignment.availabilitymanagement.controller;
 
 import com.assignment.availabilitymanagement.dto.ResortDTO;
 import com.assignment.availabilitymanagement.service.ResortService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,6 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -67,7 +67,7 @@ public class ResortController {
   /**
    * Updates an existing resort by ID.
    *
-   * @param id The ID of the resort to update.
+   * @param id        The ID of the resort to update.
    * @param resortDTO DTO with updated resort details.
    * @return ResponseEntity with updated ResortDTO or error message if resort doesn't exist or in case of failure.
    */

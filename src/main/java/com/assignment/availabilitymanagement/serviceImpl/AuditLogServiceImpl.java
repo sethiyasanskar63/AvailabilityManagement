@@ -9,7 +9,6 @@ import com.assignment.availabilitymanagement.specification.AuditLogSpecification
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -56,8 +55,8 @@ public class AuditLogServiceImpl implements AuditLogService {
    * Retrieves audit logs based on the given criteria.
    *
    * @param auditLogId Optional ID of the audit log for specific retrieval.
-   * @param startDate Optional start date for filtering logs from this date.
-   * @param endDate Optional end date for filtering logs up to this date.
+   * @param startDate  Optional start date for filtering logs from this date.
+   * @param endDate    Optional end date for filtering logs up to this date.
    * @return A list of audit log entries that match the criteria.
    */
   @Override

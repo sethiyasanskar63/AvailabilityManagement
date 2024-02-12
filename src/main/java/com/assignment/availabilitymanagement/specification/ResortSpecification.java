@@ -1,11 +1,11 @@
 package com.assignment.availabilitymanagement.specification;
 
 import com.assignment.availabilitymanagement.entity.Resort;
-import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import org.springframework.data.jpa.domain.Specification;
 
 /**
  * Specifications for querying Resort entities.

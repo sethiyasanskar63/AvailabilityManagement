@@ -29,8 +29,8 @@ public class AccommodationTypeSpecification implements Specification<Accommodati
    * Constructs a new AccommodationTypeSpecification with the specified filters.
    *
    * @param accommodationTypeId The ID of the accommodation type to filter by (nullable).
-   * @param arrivalDate The start date of the availability period to filter by (nullable).
-   * @param departureDate The end date of the availability period to filter by (nullable).
+   * @param arrivalDate         The start date of the availability period to filter by (nullable).
+   * @param departureDate       The end date of the availability period to filter by (nullable).
    */
   public AccommodationTypeSpecification(Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate) {
     this.accommodationTypeId = accommodationTypeId;
@@ -41,10 +41,10 @@ public class AccommodationTypeSpecification implements Specification<Accommodati
   /**
    * Builds the predicate for querying accommodation types based on the specified filters.
    *
-   * @param root    The root of the query.
-   * @param query   The criteria query.
-   * @param cb      The criteria builder.
-   * @return        The predicate for filtering the query, based on accommodation type ID and availability dates.
+   * @param root  The root of the query.
+   * @param query The criteria query.
+   * @param cb    The criteria builder.
+   * @return The predicate for filtering the query, based on accommodation type ID and availability dates.
    */
   @Override
   public Predicate toPredicate(Root<AccommodationType> root, CriteriaQuery<?> query, CriteriaBuilder cb) {

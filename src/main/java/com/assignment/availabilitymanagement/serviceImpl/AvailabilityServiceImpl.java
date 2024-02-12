@@ -45,10 +45,10 @@ public class AvailabilityServiceImpl implements AvailabilityService {
   /**
    * Fetches availabilities based on the specified criteria.
    *
-   * @param availabilityId       The ID of the availability.
-   * @param accommodationTypeId  The ID of the accommodation type.
-   * @param arrivalDate          The arrival date.
-   * @param departureDate        The departure date.
+   * @param availabilityId      The ID of the availability.
+   * @param accommodationTypeId The ID of the accommodation type.
+   * @param arrivalDate         The arrival date.
+   * @param departureDate       The departure date.
    * @return A list of availability DTOs.
    */
   @Override
@@ -82,7 +82,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
    */
   @Override
   @Transactional
-  public AvailabilityDTO updateAvailabilityFromDTO(AvailabilityDTO availabilityDTO){
+  public AvailabilityDTO updateAvailabilityFromDTO(AvailabilityDTO availabilityDTO) {
     Availability updatedAvailability = availabilityRepository.saveAndFlush(availabilityMapper.toEntity(availabilityDTO));
     return availabilityMapper.toDto(updatedAvailability);
   }

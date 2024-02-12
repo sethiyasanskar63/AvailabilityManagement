@@ -2,6 +2,7 @@ package com.assignment.availabilitymanagement.controller;
 
 import com.assignment.availabilitymanagement.dto.AccommodationTypeDTO;
 import com.assignment.availabilitymanagement.service.AccommodationTypeService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -30,8 +30,8 @@ public class AccommodationTypeController {
    * Retrieves a list of all accommodation types, optionally filtered by accommodation type ID or availability within a date range.
    *
    * @param accommodationTypeId Optional ID of the accommodation type for filtering.
-   * @param arrivalDate Optional arrival date for availability checking.
-   * @param departureDate Optional departure date for availability checking.
+   * @param arrivalDate         Optional arrival date for availability checking.
+   * @param departureDate       Optional departure date for availability checking.
    * @return ResponseEntity containing the list of accommodation types or an appropriate error message.
    */
   @GetMapping
@@ -81,7 +81,7 @@ public class AccommodationTypeController {
   /**
    * Updates an existing accommodation type by ID.
    *
-   * @param id The ID of the accommodation type to update.
+   * @param id                   The ID of the accommodation type to update.
    * @param accommodationTypeDTO DTO with updated accommodation type details.
    * @return ResponseEntity with the updated AccommodationTypeDTO or an error message.
    */

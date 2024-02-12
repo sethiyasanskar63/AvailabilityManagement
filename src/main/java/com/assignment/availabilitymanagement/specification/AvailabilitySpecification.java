@@ -1,13 +1,14 @@
 package com.assignment.availabilitymanagement.specification;
 
 import com.assignment.availabilitymanagement.entity.Availability;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.jpa.domain.Specification;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,10 +29,10 @@ public class AvailabilitySpecification implements Specification<Availability> {
   /**
    * Constructs a new AvailabilitySpecification with the given criteria.
    *
-   * @param availabilityId Optional ID of the availability record.
+   * @param availabilityId      Optional ID of the availability record.
    * @param accommodationTypeId Optional ID of the associated accommodation type.
-   * @param startDate Optional start date for filtering availabilities.
-   * @param endDate Optional end date for filtering availabilities.
+   * @param startDate           Optional start date for filtering availabilities.
+   * @param endDate             Optional end date for filtering availabilities.
    */
   public AvailabilitySpecification(Long availabilityId, Long accommodationTypeId, LocalDate startDate, LocalDate endDate) {
     this.availabilityId = availabilityId;
