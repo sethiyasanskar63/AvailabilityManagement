@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,9 +42,25 @@ public class ResortServiceImpl implements ResortService {
   @Override
   @Transactional(readOnly = true)
   public List<ResortDTO> getResorts(Long resortId) {
-    List<Resort> resorts = resortRepository.findAll(ResortSpecification.hasResortId(resortId));
+    List<Resort> resorts =  resortRepository.findAll(ResortSpecification.hasResortId(resortId));
     logger.debug("Retrieved {} resorts.", resorts.size());
     return resorts.stream().map(resortMapper::toDto).collect(Collectors.toList());
+  }
+
+  /**
+   * Retrieves a paginated list of resorts, optionally filtered by a resort ID. This method supports pagination, allowing for efficient data retrieval
+   * in scenarios where the total number of resorts is large. The resort ID parameter is optional and serves as a filter to narrow down the search results.
+   *
+   * @param resortId Optional. The ID of the specific resort to retrieve.
+   * @param pageable The pagination information including page number, size, and sorting criteria.
+   * @return A {@link Page} of {@link ResortDTO} objects matching the criteria, providing a subset of resorts according to the pagination settings.
+   */
+  @Override
+  @Transactional(readOnly = true)
+  public Page<ResortDTO> getResorts(Long resortId, Pageable pageable) {
+    logger.debug("Fetching paginated list of resorts with optional filtering by resort ID.");
+    Page<Resort> resorts = resortRepository.findAll(ResortSpecification.hasResortId(resortId), pageable);
+    return resorts.map(resortMapper::toDto);
   }
 
   /**

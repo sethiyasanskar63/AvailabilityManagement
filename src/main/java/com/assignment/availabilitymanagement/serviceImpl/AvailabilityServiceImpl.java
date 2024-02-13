@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,12 +51,30 @@ public class AvailabilityServiceImpl implements AvailabilityService {
    * @param accommodationTypeId The ID of the accommodation type.
    * @param arrivalDate         The arrival date.
    * @param departureDate       The departure date.
+   * @param pageable            The pageable object for pagination.
+   * @return A page of availability DTOs.
+   */
+  @Override
+  @Transactional(readOnly = true)
+  public Page<AvailabilityDTO> getAvailability(Long availabilityId, Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate, Pageable pageable) {
+    logger.debug("Fetching availability with specified criteria.");
+    AvailabilitySpecification spec = new AvailabilitySpecification(availabilityId, accommodationTypeId, arrivalDate, departureDate);
+    Page<Availability> availabilities = availabilityRepository.findAll(spec, pageable);
+    return availabilities.map(availabilityMapper::toDto);
+  }
+
+  /**
+   * Fetches availabilities based on the specified criteria.
+   *
+   * @param availabilityId      The ID of the availability.
+   * @param accommodationTypeId The ID of the accommodation type.
+   * @param arrivalDate         The arrival date.
+   * @param departureDate       The departure date.
    * @return A list of availability DTOs.
    */
   @Override
   @Transactional(readOnly = true)
-  public List<AvailabilityDTO> getAvailability(Long availabilityId, Long accommodationTypeId,
-                                               LocalDate arrivalDate, LocalDate departureDate) {
+  public List<AvailabilityDTO> getAvailability(Long availabilityId, Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate) {
     logger.debug("Fetching availability with specified criteria.");
     AvailabilitySpecification spec = new AvailabilitySpecification(availabilityId, accommodationTypeId, arrivalDate, departureDate);
     List<Availability> availabilities = availabilityRepository.findAll(spec);

@@ -13,6 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,6 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -50,30 +54,37 @@ public class AvailabilityController {
    * @param departureDate       The end date for availability search.
    * @param availabilityId      Specific availability ID for retrieval.
    * @param accommodationTypeId Accommodation type ID for filtering availabilities.
-   * @return A list of AvailabilityDTO objects that match the criteria.
+   * @param pageable            Pageable object for pagination and sorting.
+   * @return A page of AvailabilityDTO objects that match the criteria.
    */
   @GetMapping
-  public ResponseEntity<?> getAvailability(
+  public ResponseEntity<Page<AvailabilityDTO>> getAvailability(
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate arrivalDate,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
       @RequestParam(required = false) Long availabilityId,
-      @RequestParam(required = false) Long accommodationTypeId) {
+      @RequestParam(required = false) Long accommodationTypeId,
+      @PageableDefault(size = 10) Pageable pageable) {
 
     logger.debug("Fetching availabilities with given criteria.");
     if (availabilityId != null && (arrivalDate != null || departureDate != null || accommodationTypeId != null)) {
       logger.warn("When providing availabilityId, no other parameters should be provided.");
-      return ResponseEntity.badRequest().body("When availabilityId is provided, no other search criteria should be specified.");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "When availabilityId is provided, no other search criteria should be specified.");
+    }
+
+    if ((arrivalDate == null && departureDate != null) || (arrivalDate != null && departureDate == null)) {
+      logger.debug("Both arrival and departure dates are required to check availability.");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Both arrival and departure dates are required to check availability.");
     }
 
     try {
-      List<AvailabilityDTO> availabilities = availabilityService.getAvailability(availabilityId, accommodationTypeId, arrivalDate, departureDate);
+      Page<AvailabilityDTO> availabilities = availabilityService.getAvailability(availabilityId, accommodationTypeId, arrivalDate, departureDate, pageable);
       if (availabilities.isEmpty()) {
         return ResponseEntity.noContent().build();
       }
       return ResponseEntity.ok(availabilities);
     } catch (Exception e) {
       logger.error("Error fetching availabilities: {}", e.getMessage());
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching availabilities.");
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error fetching availabilities.");
     }
   }
 
@@ -178,17 +189,15 @@ public class AvailabilityController {
    * Retrieves possible dates for availability based on accommodation type and year.
    *
    * @param accommodationTypeId The accommodation type ID.
-   * @param year                The year for which to find available dates.
    * @return A list of possible dates or an error message.
    */
   @GetMapping("/getPossibleDates")
   public ResponseEntity<?> getPossibleDatesByAccommodationTypeId(
-      @RequestParam Long accommodationTypeId,
-      @RequestParam Integer year) {
-    logger.debug("Fetching possible dates for accommodationTypeId: {} for year: {}", accommodationTypeId, year);
+      @RequestParam Long accommodationTypeId) {
+    logger.debug("Fetching possible dates for accommodationTypeId: {}", accommodationTypeId);
     try {
       List<Availability> availabilities = availabilityService.getAvailability(null, accommodationTypeId, null, null).stream().map(availabilityMapper::toEntity).collect(Collectors.toList());
-      List<Map<String, Object>> possibleDates = PossibleDates.getPossibleDatesByAccommodationTypeId(year, availabilities);
+      List<Map<String, Object>> possibleDates = PossibleDates.getPossibleDatesByAccommodationTypeId(availabilities);
       return ResponseEntity.ok(possibleDates);
     } catch (Exception e) {
       logger.error("Error fetching possible dates: {}", e.getMessage());
