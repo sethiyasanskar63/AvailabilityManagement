@@ -7,8 +7,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.ReadOnlyProperty;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * Data Transfer Object for transferring availability data, including validation to ensure data integrity.
@@ -40,4 +42,7 @@ public class AvailabilityDTO {
 
   @NotNull(message = "Accommodation Type ID must be provided.")
   private Long accommodationTypeId;
+
+  @ReadOnlyProperty
+  private LocalDateTime closingDate;
 }

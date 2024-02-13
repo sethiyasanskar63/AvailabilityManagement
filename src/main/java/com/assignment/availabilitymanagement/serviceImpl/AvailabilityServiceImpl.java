@@ -1,7 +1,6 @@
 package com.assignment.availabilitymanagement.serviceImpl;
 
 import com.assignment.availabilitymanagement.dto.AvailabilityDTO;
-import com.assignment.availabilitymanagement.entity.AccommodationType;
 import com.assignment.availabilitymanagement.entity.Availability;
 import com.assignment.availabilitymanagement.mapper.AvailabilityMapper;
 import com.assignment.availabilitymanagement.repository.AccommodationTypeRepository;
@@ -19,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,9 +34,6 @@ public class AvailabilityServiceImpl implements AvailabilityService {
 
   @Autowired
   private AvailabilityRepository availabilityRepository;
-
-  @Autowired
-  private AccommodationTypeRepository accommodationTypeRepository;
 
   @Autowired
   private AvailabilityMapper availabilityMapper;
@@ -89,22 +86,18 @@ public class AvailabilityServiceImpl implements AvailabilityService {
    */
   @Override
   @Transactional
-  public AvailabilityDTO saveAvailabilityFromDTO(AvailabilityDTO availabilityDTO) {
+  public String saveAvailabilityFromDTO(AvailabilityDTO availabilityDTO) {
     logger.debug("Attempting to save new availability.");
-    return checkForOverlapAndSave(availabilityDTO);
-  }
-
-  /**
-   * Updates an availability from the provided DTO.
-   *
-   * @param availabilityDTO The updated availability DTO.
-   * @return The updated availability DTO.
-   */
-  @Override
-  @Transactional
-  public AvailabilityDTO updateAvailabilityFromDTO(AvailabilityDTO availabilityDTO) {
-    Availability updatedAvailability = availabilityRepository.saveAndFlush(availabilityMapper.toEntity(availabilityDTO));
-    return availabilityMapper.toDto(updatedAvailability);
+    try{
+      AvailabilitySpecification spec = new AvailabilitySpecification(null, availabilityDTO.getAccommodationTypeId(), null, null);
+      List<Availability> existingAvailabilities = availabilityRepository.findAll(spec);
+      List<Availability> updatedAvailabilities = updateAndSplitAvailabilities(availabilityMapper.toEntity(availabilityDTO),existingAvailabilities);
+      availabilityRepository.saveAllAndFlush(updatedAvailabilities);
+    } catch (Exception e){
+      logger.error("Error saving availability {}", availabilityDTO, e);
+      throw new IllegalStateException("Failed to delete availability: " + e.getMessage());
+    }
+    return "Availability Saved";
   }
 
   /**
@@ -120,7 +113,10 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     List<AvailabilityDTO> availabilitiesDTO = workBookToAvailability.excelToAvailabilityDTO(workbook);
     for (AvailabilityDTO availabilityDTO : availabilitiesDTO) {
       try {
-        checkForOverlapAndSave(availabilityDTO);
+        AvailabilitySpecification spec = new AvailabilitySpecification(null, availabilityDTO.getAccommodationTypeId(), null, null);
+        List<Availability> existingAvailabilities = availabilityRepository.findAll(spec);
+        List<Availability> updatedAvailabilities = updateAndSplitAvailabilities(availabilityMapper.toEntity(availabilityDTO),existingAvailabilities);
+        availabilityRepository.saveAllAndFlush(updatedAvailabilities);
       } catch (IllegalStateException e) {
         logger.warn(e.getMessage());
       }
@@ -148,24 +144,38 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     }
   }
 
-  /**
-   * Checks for overlap with existing availabilities and saves the provided availability DTO.
-   *
-   * @param availabilityDTO The availability DTO to be saved.
-   * @return The saved availability DTO.
-   */
-  private AvailabilityDTO checkForOverlapAndSave(AvailabilityDTO availabilityDTO) {
-    AvailabilitySpecification spec = new AvailabilitySpecification(null, availabilityDTO.getAccommodationTypeId(), availabilityDTO.getStayFromDate(), availabilityDTO.getStayToDate());
-    List<Availability> existingAvailabilities = availabilityRepository.findAll(spec);
-    if (!existingAvailabilities.isEmpty()) {
-      throw new IllegalStateException("Overlap detected: Availability already exists for the specified period.");
+private List<Availability> updateAndSplitAvailabilities(Availability newAvailability, List<Availability> existingAvailabilities) {
+    List<Availability> updatedAvailabilities = new ArrayList<>();
+
+    for (Availability existing : existingAvailabilities) {
+      // Check if the new availability overlaps with the existing one
+      if (!newAvailability.getStayToDate().isBefore(existing.getStayFromDate()) &&
+          !newAvailability.getStayFromDate().isAfter(existing.getStayToDate())) {
+
+        // Case 1: New availability starts before existing one
+        if (newAvailability.getStayFromDate().isBefore(existing.getStayFromDate())) {
+          updatedAvailabilities.add(new Availability(null, newAvailability.getStayFromDate(), existing.getStayFromDate().minusDays(1),
+              newAvailability.getMinNight(), newAvailability.getArrivalDays(), newAvailability.getDepartureDays(), newAvailability.getClosingDate(), newAvailability.getAccommodationType()));
+        }
+
+        // Case 2: New availability ends after existing one
+        if (newAvailability.getStayToDate().isAfter(existing.getStayToDate())) {
+          updatedAvailabilities.add(new Availability(null, existing.getStayToDate().plusDays(1), newAvailability.getStayToDate(),
+              newAvailability.getMinNight(), newAvailability.getArrivalDays(), newAvailability.getDepartureDays(), newAvailability.getClosingDate(), newAvailability.getAccommodationType()));
+        }
+
+        // Case 3: New availability completely overlaps existing one
+        // This case is implicitly handled by splitting the availability into before and after parts, if applicable.
+
+      } else {
+        // No overlap, keep the existing availability as is
+        updatedAvailabilities.add(existing);
+      }
     }
-    Availability availability = availabilityMapper.toEntity(availabilityDTO);
-    AccommodationType accommodationType = accommodationTypeRepository.findById(availabilityDTO.getAccommodationTypeId())
-        .orElseThrow(() -> new IllegalArgumentException("Invalid Accommodation Type ID."));
-    availability.setAccommodationType(accommodationType);
-    Availability savedAvailability = availabilityRepository.save(availability);
-    logger.debug("Successfully saved availability.");
-    return availabilityMapper.toDto(savedAvailability);
+
+    // Add the new availability itself
+    updatedAvailabilities.add(newAvailability);
+
+    return updatedAvailabilities;
   }
 }

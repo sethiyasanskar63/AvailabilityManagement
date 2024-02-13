@@ -45,10 +45,7 @@ public interface AvailabilityService {
    *
    * @param availabilityDTO DTO containing the availability information to be saved.
    */
-  AvailabilityDTO saveAvailabilityFromDTO(AvailabilityDTO availabilityDTO);
-
-  @Transactional
-  AvailabilityDTO updateAvailabilityFromDTO(AvailabilityDTO availabilityDTO);
+  String saveAvailabilityFromDTO(AvailabilityDTO availabilityDTO);
 
   /**
    * Saves all availabilities contained within a provided Excel workbook.
