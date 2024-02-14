@@ -13,8 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 /**
  * Handles resort-related operations, offering endpoints for CRUD operations on resorts.
  */
@@ -36,7 +34,7 @@ public class ResortController {
    * @param pageable {@link Pageable} object containing pagination information such as page number,
    *                 page size, and sorting criteria.
    * @return ResponseEntity containing a {@link Page} of {@link ResortDTO}s if successful, including
-   *         pagination information, or appropriate error responses otherwise.
+   * pagination information, or appropriate error responses otherwise.
    */
   @GetMapping
   public ResponseEntity<?> getResorts(@RequestParam(required = false) Long resortId, Pageable pageable) {

@@ -88,7 +88,6 @@ public class AvailabilityController {
     }
   }
 
-
   /**
    * Adds a new availability entry.
    *
@@ -98,8 +97,8 @@ public class AvailabilityController {
   @PostMapping
   public ResponseEntity<?> addAvailability(@Valid @RequestBody AvailabilityDTO availabilityDTO) {
     try {
-      AvailabilityDTO savedAvailability = availabilityService.saveAvailabilityFromDTO(availabilityDTO);
-      return ResponseEntity.ok(savedAvailability);
+      String availabilityStatus = availabilityService.saveAvailabilityFromDTO(availabilityDTO);
+      return ResponseEntity.ok(availabilityStatus);
     } catch (Exception e) {
       logger.error("Error adding availability: {}", e.getMessage());
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error adding availability.");
@@ -116,8 +115,8 @@ public class AvailabilityController {
   public ResponseEntity<?> updateAvailability(@PathVariable Long id, @Valid @RequestBody AvailabilityDTO availabilityDTO) {
     try {
       availabilityDTO.setAvailabilityId(id);
-      AvailabilityDTO updatedAvailability = availabilityService.updateAvailabilityFromDTO(availabilityDTO);
-      return ResponseEntity.ok(updatedAvailability);
+      String availabilityStatus = availabilityService.saveAvailabilityFromDTO(availabilityDTO);
+      return ResponseEntity.ok(availabilityStatus);
     } catch (Exception e) {
       logger.error("Error updating availability: {}", e.getMessage());
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating availability.");

@@ -36,10 +36,12 @@ public class AuditConfig {
       " || execution(public * com.assignment.availabilitymanagement.serviceImpl.AvailabilityServiceImpl.*(..))")
   public void logAfterReturning(JoinPoint joinPoint) {
     try {
+      String description = joinPoint.getTarget().getClass().getSimpleName() + " method called: " +
+          joinPoint.getSignature().getName() + " with arguments: " +
+          getMethodArguments(joinPoint.getArgs());
+      String truncatedDescription = truncateDescription(description);
       auditLogService.saveLogs(AuditLogDTO.builder().creationDate(new Date())
-          .description(joinPoint.getTarget().getClass().getSimpleName() + " method called: " +
-              joinPoint.getSignature().getName() + " with arguments: " +
-              getMethodArguments(joinPoint.getArgs()))
+          .description(truncatedDescription)
           .build());
     } catch (Exception e) {
       logger.error("Error logging after method execution", e);
@@ -55,5 +57,16 @@ public class AuditConfig {
       arguments.setLength(arguments.length() - 2);
     }
     return arguments.toString();
+  }
+
+  /**
+   * Truncates a string to the specified length, ensuring it does not exceed the database column size.
+   *
+   * @param description The string to be truncated.
+   * @return The truncated string if the original exceeds the maxLength; otherwise, the original string.
+   */
+  private String truncateDescription(String description) {
+    if (description == null) return null;
+    return description.length() > 255 ? description.substring(0, 255) : description;
   }
 }

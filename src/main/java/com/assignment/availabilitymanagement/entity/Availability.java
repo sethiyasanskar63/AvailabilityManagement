@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * Entity representing availability information for an accommodation type,
@@ -37,6 +38,9 @@ public class Availability {
 
   @Column(name = "departure_days")
   private Integer departureDays;
+
+  @Column(name = "closing_date")
+  private LocalDateTime closingDate;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "accommodation_type_id", nullable = false)

@@ -4,7 +4,6 @@ import com.assignment.availabilitymanagement.dto.AvailabilityDTO;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -45,10 +44,7 @@ public interface AvailabilityService {
    *
    * @param availabilityDTO DTO containing the availability information to be saved.
    */
-  AvailabilityDTO saveAvailabilityFromDTO(AvailabilityDTO availabilityDTO);
-
-  @Transactional
-  AvailabilityDTO updateAvailabilityFromDTO(AvailabilityDTO availabilityDTO);
+  String saveAvailabilityFromDTO(AvailabilityDTO availabilityDTO);
 
   /**
    * Saves all availabilities contained within a provided Excel workbook.

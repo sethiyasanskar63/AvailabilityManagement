@@ -3,10 +3,8 @@ package com.assignment.availabilitymanagement.service;
 import com.assignment.availabilitymanagement.dto.AuditLogDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
 
 /**
  * Service interface for managing audit logs.
