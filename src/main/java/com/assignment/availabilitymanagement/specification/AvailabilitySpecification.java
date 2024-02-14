@@ -54,11 +54,14 @@ public class AvailabilitySpecification implements Specification<Availability> {
       if (accommodationTypeId != null) {
         predicates.add(criteriaBuilder.equal(root.get("accommodationType").get("accommodationTypeId"), accommodationTypeId));
       }
+
       if (startDate != null && endDate != null) {
         Predicate overlapsWithStartDate = criteriaBuilder.lessThanOrEqualTo(root.get("stayFromDate"), endDate);
         Predicate overlapsWithEndDate = criteriaBuilder.greaterThanOrEqualTo(root.get("stayToDate"), startDate);
         predicates.add(criteriaBuilder.and(overlapsWithStartDate, overlapsWithEndDate));
       }
+
+      predicates.add(criteriaBuilder.isNull(root.get("closingDate")));
 
       return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
     } catch (Exception e) {
@@ -66,5 +69,4 @@ public class AvailabilitySpecification implements Specification<Availability> {
       throw new RuntimeException("Error while building AvailabilitySpecification predicate", e);
     }
   }
-
 }
