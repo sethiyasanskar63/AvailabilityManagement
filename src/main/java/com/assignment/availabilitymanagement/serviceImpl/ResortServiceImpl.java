@@ -42,7 +42,7 @@ public class ResortServiceImpl implements ResortService {
   @Override
   @Transactional(readOnly = true)
   public List<ResortDTO> getResorts(Long resortId) {
-    List<Resort> resorts =  resortRepository.findAll(ResortSpecification.hasResortId(resortId));
+    List<Resort> resorts = resortRepository.findAll(ResortSpecification.hasResortId(resortId));
     logger.debug("Retrieved {} resorts.", resorts.size());
     return resorts.stream().map(resortMapper::toDto).collect(Collectors.toList());
   }

@@ -32,8 +32,8 @@ public interface ResortService {
    * @param pageable A {@link Pageable} object containing pagination and sorting information. Determines
    *                 the size of the page, the current page number, and sorting parameters.
    * @return A {@link Page} of {@link ResortDTO} objects representing the resorts within the specified
-   *         page. Includes pagination information such as total number of pages, total resorts, current
-   *         page number, and the size of the page.
+   * page. Includes pagination information such as total number of pages, total resorts, current
+   * page number, and the size of the page.
    */
   @Transactional(readOnly = true)
   Page<ResortDTO> getResorts(Long resortId, Pageable pageable);
