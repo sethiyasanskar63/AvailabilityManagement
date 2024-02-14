@@ -94,10 +94,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
   public String saveAvailabilityFromDTO(AvailabilityDTO availabilityDTO) {
     logger.debug("Attempting to save new availability.");
     try{
-      AvailabilitySpecification spec = new AvailabilitySpecification(null, availabilityDTO.getAccommodationTypeId(), null, null);
-      Sort sort = Sort.by(Sort.Order.asc("accommodationType.accommodationTypeId"), Sort.Order.asc("stayFromDate"));
-      List<Availability> existingAvailabilities = availabilityRepository.findAll(spec,sort);
-      List<Availability> updatedAvailabilities = updateAndSplitAvailabilities(availabilityMapper.toEntity(availabilityDTO),existingAvailabilities);
+      List<Availability> updatedAvailabilities = updateAndSplitAvailabilities(availabilityMapper.toEntity(availabilityDTO));
       availabilityRepository.saveAllAndFlush(updatedAvailabilities);
     } catch (Exception e){
       logger.error("Error saving availability {}", availabilityDTO, e);
@@ -119,9 +116,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     List<AvailabilityDTO> availabilitiesDTO = workBookToAvailability.excelToAvailabilityDTO(workbook);
     for (AvailabilityDTO availabilityDTO : availabilitiesDTO) {
       try {
-        AvailabilitySpecification spec = new AvailabilitySpecification(null, availabilityDTO.getAccommodationTypeId(), null, null);
-        List<Availability> existingAvailabilities = availabilityRepository.findAll(spec,sort);
-        List<Availability> updatedAvailabilities = updateAndSplitAvailabilities(availabilityMapper.toEntity(availabilityDTO),existingAvailabilities);
+        List<Availability> updatedAvailabilities = updateAndSplitAvailabilities(availabilityMapper.toEntity(availabilityDTO));
         availabilityRepository.saveAllAndFlush(updatedAvailabilities);
       } catch (IllegalStateException e) {
         logger.warn(e.getMessage());
@@ -150,46 +145,21 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     }
   }
 
-  private List<Availability> updateAndSplitAvailabilities(Availability newAvailability, List<Availability> existingAvailabilities) {
+  private List<Availability> updateAndSplitAvailabilities(Availability newAvailability) {
+
+    AvailabilitySpecification spec = new AvailabilitySpecification(null, newAvailability.getAccommodationType().getAccommodationTypeId(), newAvailability.getStayFromDate(), newAvailability.getStayToDate());
+    List<Availability> existingAvailabilities = availabilityRepository.findAll(spec,sort);
     List<Availability> updatedAvailabilities = new ArrayList<>();
+
+    if (existingAvailabilities.isEmpty()){
+      updatedAvailabilities.add(newAvailability);
+      return updatedAvailabilities;
+    }
+    
     LocalDate today = LocalDate.now();
 
     for (Availability existing : existingAvailabilities) {
-      // Check if newAvailability's start date falls within an existing availability
-      if (!newAvailability.getStayFromDate().isBefore(existing.getStayFromDate()) &&
-          !newAvailability.getStayFromDate().isAfter(existing.getStayToDate())) {
-        // Create new availability from the start of existing to the day before the start of new
-        updatedAvailabilities.add(new Availability(null, existing.getStayFromDate(), newAvailability.getStayFromDate().minusDays(1),
-            existing.getMinNight(), existing.getArrivalDays(), existing.getDepartureDays(), existing.getClosingDate(), existing.getAccommodationType()));
-
-        // If newAvailability ends before existing ends, split existing into another new availability
-        if (newAvailability.getStayToDate().isBefore(existing.getStayToDate())) {
-          updatedAvailabilities.add(newAvailability);
-          updatedAvailabilities.add(new Availability(null, newAvailability.getStayToDate().plusDays(1), existing.getStayToDate(),
-              existing.getMinNight(), existing.getArrivalDays(), existing.getDepartureDays(), existing.getClosingDate(), existing.getAccommodationType()));
-          existing.setClosingDate(today.atStartOfDay());
-        } else {
-          existing.setClosingDate(today.atStartOfDay());
-        }
-      } else {
-        updatedAvailabilities.add(existing);
-      }
     }
-
-    // Handle the scenario of checking and linking availabilities post the end of newAvailability
-    // This part would need additional logic to identify and adjust the subsequent availabilities (availability2 as per your example)
-
-    // Add or merge the new availability appropriately
-    // This requires additional logic to ensure no duplicate or overlapping entries are created inadvertently
-
-    return mergeAndCloseAvailabilities(updatedAvailabilities, newAvailability);
-  }
-
-  private List<Availability> mergeAndCloseAvailabilities(List<Availability> availabilities, Availability newAvailability) {
-    // Implement the logic to merge new availability with existing ones, adjust dates, and close as necessary
-    // This would involve sorting, merging adjacent or overlapping periods, and potentially closing availabilities as described
-    // For simplicity, this method stub needs detailed implementation based on your database and application logic
-
-    return availabilities; // Placeholder return
+    return updatedAvailabilities;
   }
 }
