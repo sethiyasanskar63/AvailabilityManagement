@@ -20,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.time.LocalDate;
 import java.util.List;
@@ -151,15 +152,36 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     List<Availability> existingAvailabilities = availabilityRepository.findAll(spec,sort);
     List<Availability> updatedAvailabilities = new ArrayList<>();
 
+    //in case of no overlapping availability
     if (existingAvailabilities.isEmpty()){
       updatedAvailabilities.add(newAvailability);
       return updatedAvailabilities;
     }
-    
-    LocalDate today = LocalDate.now();
 
-    for (Availability existing : existingAvailabilities) {
+    //in case new availability starts before existing availability
+    if (newAvailability.getStayFromDate().isBefore(existingAvailabilities.get(0).getStayFromDate()) || newAvailability.getStayFromDate().isEqual(existingAvailabilities.get(0).getStayFromDate())){
+      Availability beforeAvailability = new Availability(null,newAvailability.getStayFromDate(),newAvailability.getStayToDate(),newAvailability.getMinNight(),newAvailability.getArrivalDays(),newAvailability.getDepartureDays(),null,newAvailability.getAccommodationType());
+      updatedAvailabilities.add(beforeAvailability);
     }
+
+    //in case new availability starts after existing availability
+    if (newAvailability.getStayFromDate().isAfter(existingAvailabilities.get(0).getStayFromDate())){
+      Availability overlappingAvailability = new Availability(null,existingAvailabilities.get(0).getStayFromDate(),newAvailability.getStayFromDate().minusDays(1),existingAvailabilities.get(0).getMinNight(),existingAvailabilities.get(0).getArrivalDays(),existingAvailabilities.get(0).getDepartureDays(),null,existingAvailabilities.get(0).getAccommodationType());
+      updatedAvailabilities.add(overlappingAvailability);
+    }
+
+    //in case new availability ends before last availability
+    if (newAvailability.getStayToDate().isBefore(existingAvailabilities.get(existingAvailabilities.size() - 1).getStayToDate())){
+      Availability afterAvailability = new Availability(null,newAvailability.getStayToDate().plusDays(1),existingAvailabilities.get(existingAvailabilities.size() - 1).getStayToDate(),existingAvailabilities.get(existingAvailabilities.size() - 1).getMinNight(),existingAvailabilities.get(existingAvailabilities.size() - 1).getArrivalDays(),existingAvailabilities.get(existingAvailabilities.size() - 1).getDepartureDays(),null,existingAvailabilities.get(existingAvailabilities.size() - 1).getAccommodationType());
+      updatedAvailabilities.add(afterAvailability);
+    }
+
+    //Close existing availabilities
+    for (Availability existingAvailability : existingAvailabilities){
+      existingAvailability.setClosingDate(LocalDateTime.now());
+    }
+    updatedAvailabilities.addAll(existingAvailabilities);
+
     return updatedAvailabilities;
   }
 }
