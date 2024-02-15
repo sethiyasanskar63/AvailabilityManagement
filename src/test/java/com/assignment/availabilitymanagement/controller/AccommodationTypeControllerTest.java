@@ -8,6 +8,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -39,43 +42,53 @@ class AccommodationTypeControllerTest {
         new AccommodationTypeDTO(3L, "Type 3", 3)
     );
 
-    lenient().when(accommodationTypeService.getAccommodationTypes(null, null, null)).thenReturn(mockAccommodations);
-    lenient().when(accommodationTypeService.getAccommodationTypes(eq(1L), isNull(), isNull())).thenReturn(Collections.singletonList(mockAccommodations.get(0)));
-    lenient().when(accommodationTypeService.getAccommodationTypes(isNull(), any(LocalDate.class), isNull())).thenReturn(mockAccommodations.subList(0, 2));
-    lenient().when(accommodationTypeService.getAccommodationTypes(isNull(), isNull(), any(LocalDate.class))).thenReturn(mockAccommodations.subList(1, 3));
-    lenient().when(accommodationTypeService.getAccommodationTypes(isNull(), any(LocalDate.class), any(LocalDate.class))).thenReturn(mockAccommodations);
+    lenient().when(accommodationTypeService.getAccommodationTypes(null, null, null, Pageable.unpaged()))
+        .thenReturn(new PageImpl<>(mockAccommodations));
+    lenient().when(accommodationTypeService.getAccommodationTypes(eq(1L), isNull(), isNull(), any(Pageable.class)))
+        .thenReturn(new PageImpl<>(Collections.singletonList(mockAccommodations.get(0))));
+    lenient().when(accommodationTypeService.getAccommodationTypes(isNull(), any(LocalDate.class), isNull(), any(Pageable.class)))
+        .thenReturn(new PageImpl<>(mockAccommodations.subList(0, 2)));
+    lenient().when(accommodationTypeService.getAccommodationTypes(isNull(), isNull(), any(LocalDate.class), any(Pageable.class)))
+        .thenReturn(new PageImpl<>(mockAccommodations.subList(1, 3)));
+    lenient().when(accommodationTypeService.getAccommodationTypes(isNull(), any(LocalDate.class), any(LocalDate.class), any(Pageable.class)))
+        .thenReturn(new PageImpl<>(mockAccommodations));
   }
+
 
   @Test
   void whenNoParameterProvided_shouldReturnAllAccommodationTypes() {
-    ResponseEntity<?> response = accommodationTypeController.getAccommodationTypes(null, null, null);
+    ResponseEntity<?> response = accommodationTypeController.getAccommodationTypes(null, null, null, Pageable.unpaged());
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
-    assertEquals(3, ((List<AccommodationTypeDTO>) response.getBody()).size());
+    assertTrue(response.getBody() instanceof Page);
+    assertEquals(3, ((Page<AccommodationTypeDTO>) response.getBody()).getTotalElements());
   }
 
   @Test
   void whenAccommodationTypeIdProvided_shouldReturnAccommodationTypeWithGivenId() {
-    ResponseEntity<?> response = accommodationTypeController.getAccommodationTypes(1L, null, null);
+    ResponseEntity<?> response = accommodationTypeController.getAccommodationTypes(1L, null, null, Pageable.unpaged());
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
-    assertEquals(1L, ((List<AccommodationTypeDTO>) response.getBody()).get(0).getAccommodationTypeId());
+    assertTrue(response.getBody() instanceof Page);
+    assertEquals(1, ((Page<AccommodationTypeDTO>) response.getBody()).getTotalElements());
+    assertEquals(1L, ((Page<AccommodationTypeDTO>) response.getBody()).getContent().get(0).getAccommodationTypeId());
   }
 
   @Test
   void whenArrivalAndDepartureDatesProvided_shouldReturnAccommodationTypesWithAvailabilityBetweenGivenDates() {
-    ResponseEntity<?> response = accommodationTypeController.getAccommodationTypes(null, LocalDate.of(2024, 4, 1), LocalDate.of(2024, 10, 1));
+    ResponseEntity<?> response = accommodationTypeController.getAccommodationTypes(null, LocalDate.of(2024, 4, 1), LocalDate.of(2024, 10, 1), Pageable.unpaged());
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
-    assertFalse(((List<AccommodationTypeDTO>) response.getBody()).isEmpty());
+    assertTrue(response.getBody() instanceof Page);
+    assertFalse(((Page<AccommodationTypeDTO>) response.getBody()).getContent().isEmpty());
   }
 
   @Test
   void whenOtherParameterProvidedWithAccommodationTypeId_shouldReturnError() {
-    ResponseEntity<?> response = accommodationTypeController.getAccommodationTypes(1L, LocalDate.of(2024, 4, 1), null);
+    ResponseEntity<?> response = accommodationTypeController.getAccommodationTypes(1L, LocalDate.of(2024, 4, 1), null, Pageable.ofSize(1));
 
     assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     assertTrue(Objects.requireNonNull(response.getBody()).toString().contains("Cannot specify accommodationTypeId together with arrivalDate or departureDate."));

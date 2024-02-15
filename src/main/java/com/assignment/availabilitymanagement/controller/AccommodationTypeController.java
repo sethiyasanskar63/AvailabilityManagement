@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,7 +42,7 @@ public class AccommodationTypeController {
       @RequestParam(required = false) Long accommodationTypeId,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate arrivalDate,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
-      Pageable pageable) {
+      @PageableDefault(size = 10) Pageable pageable) {
     try {
       if (accommodationTypeId != null && (arrivalDate != null || departureDate != null)) {
         return ResponseEntity.badRequest().body("Cannot specify accommodationTypeId together with arrivalDate or departureDate.");

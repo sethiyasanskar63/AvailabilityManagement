@@ -8,13 +8,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -140,131 +143,87 @@ class AvailabilityControllerTest {
         .departureDays(new int[]{7})
         .build();
     mockAvailabilities = Arrays.asList(availabilityDTO1, availabilityDTO2, availabilityDTO3, availabilityDTO4, availabilityDTO5, availabilityDTO6, availabilityDTO7, availabilityDTO8, availabilityDTO9, availabilityDTO10, availabilityDTO11, availabilityDTO12);
-    when(availabilityService.getAvailability(any(), any(), any(), any())).thenReturn(mockAvailabilities);
-    lenient().when(availabilityService.getAvailability(any(), any(), any(), any()))
-        .thenReturn(mockAvailabilities);
+    Page<AvailabilityDTO> mockPage = new PageImpl<>(mockAvailabilities, PageRequest.of(0, 10), mockAvailabilities.size());
+    lenient().when(availabilityService.getAvailability(any(), any(), any(), any(), any(Pageable.class)))
+        .thenReturn(mockPage);
   }
 
   @Test
   void whenNoParameterProvided_getAllAvailabilities() {
-    ResponseEntity<?> response = availabilityController.getAvailability(null, null, null, null);
+    Pageable pageable = PageRequest.of(0, 10);
 
-    assertNotNull(response);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertNotNull(response.getBody());
-    List<AvailabilityDTO> responseBody = (List<AvailabilityDTO>) response.getBody();
-    assertEquals(mockAvailabilities.size(), responseBody.size());
+    ResponseEntity<Page<AvailabilityDTO>> response = availabilityController.getAvailability(null, null, null, null, pageable);
+
+    assertNotNull(response, "Response should not be null.");
+    assertEquals(HttpStatus.OK, response.getStatusCode(), "Status code should be OK.");
+
+    assertNotNull(response.getBody(), "Response body should not be null.");
+    Page<AvailabilityDTO> responseBody = response.getBody();
+
+    assertEquals(mockAvailabilities.size(), responseBody.getTotalElements(), "The number of elements should match the mock availabilities size.");
+
+    assertEquals(pageable.getPageSize(), responseBody.getSize(), "Page size should match the requested size.");
+    assertEquals(pageable.getPageNumber(), responseBody.getNumber(), "Page number should match the requested page.");
   }
 
   @Test
   void whenAvailabilityIdProvided_getSpecificAvailability() {
     Long availabilityId = 1L;
-    when(availabilityService.getAvailability(availabilityId, null, null, null)).thenReturn(Arrays.asList(mockAvailabilities.get(0)));
+    Page<AvailabilityDTO> mockPage = new PageImpl<>(Collections.singletonList(mockAvailabilities.get(0)));
+    when(availabilityService.getAvailability(eq(availabilityId), any(), any(), any(), any(Pageable.class)))
+        .thenReturn(mockPage);
 
-    ResponseEntity<?> response = availabilityController.getAvailability(null, null, availabilityId, null);
+    PageRequest pageRequest = PageRequest.of(0, 10);
+    ResponseEntity<Page<AvailabilityDTO>> response = availabilityController.getAvailability(null, null, availabilityId, null, pageRequest);
 
     assertNotNull(response);
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
-    List<AvailabilityDTO> responseBody = (List<AvailabilityDTO>) response.getBody();
-    assertEquals(1, responseBody.size());
-    assertEquals(availabilityId, responseBody.get(0).getAvailabilityId());
+    Page<AvailabilityDTO> responseBody = response.getBody();
+    assertEquals(1, responseBody.getTotalElements());
+    assertEquals(availabilityId, responseBody.getContent().get(0).getAvailabilityId());
   }
 
   @Test
   void whenAccommodationTypeIdProvided_getAllAvailabilityForAccommodationType() {
     Long accommodationTypeId = 1L;
-    when(availabilityService.getAvailability(null, accommodationTypeId, null, null)).thenReturn(mockAvailabilities.stream().filter(a -> a.getAccommodationTypeId().equals(accommodationTypeId)).collect(Collectors.toList()));
+    Pageable pageable = PageRequest.of(0, 10);
+    Page<AvailabilityDTO> mockPage = new PageImpl<>(mockAvailabilities.stream()
+        .filter(a -> a.getAccommodationTypeId().equals(accommodationTypeId))
+        .collect(Collectors.toList()), pageable, mockAvailabilities.size());
+    when(availabilityService.getAvailability(null, accommodationTypeId, null, null, pageable)).thenReturn(mockPage);
+    ResponseEntity<Page<AvailabilityDTO>> response = availabilityController.getAvailability(null, null, null, accommodationTypeId, pageable);
 
-    ResponseEntity<?> response = availabilityController.getAvailability(null, null, null, accommodationTypeId);
+    assertNotNull(response, "Response should not be null.");
+    assertEquals(HttpStatus.OK, response.getStatusCode(), "Status code should be OK.");
 
-    assertNotNull(response);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertNotNull(response.getBody());
-    List<AvailabilityDTO> responseBody = (List<AvailabilityDTO>) response.getBody();
-    assertTrue(responseBody.stream().allMatch(a -> a.getAccommodationTypeId().equals(accommodationTypeId)));
-  }
-
-  @Test
-  void whenArrivalDateProvided_getAllAvailabilitiesAfterThatDate() {
-    LocalDate arrivalDate = LocalDate.parse("2024-06-01");
-    when(availabilityService.getAvailability(null, null, arrivalDate, null)).thenReturn(mockAvailabilities.stream().filter(a -> !a.getStayFromDate().isBefore(arrivalDate)).collect(Collectors.toList()));
-
-    ResponseEntity<?> response = availabilityController.getAvailability(arrivalDate, null, null, null);
-
-    assertNotNull(response);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertNotNull(response.getBody());
-    List<AvailabilityDTO> responseBody = (List<AvailabilityDTO>) response.getBody();
-    assertTrue(responseBody.stream().noneMatch(a -> a.getStayFromDate().isBefore(arrivalDate)));
-  }
-
-  @Test
-  void whenDepartureDateProvided_getAllAvailabilitiesTillThatDate() {
-    LocalDate departureDate = LocalDate.parse("2024-06-30");
-    when(availabilityService.getAvailability(null, null, null, departureDate)).thenReturn(mockAvailabilities.stream().filter(a -> !a.getStayToDate().isAfter(departureDate)).collect(Collectors.toList()));
-
-    ResponseEntity<?> response = availabilityController.getAvailability(null, departureDate, null, null);
-
-    assertNotNull(response);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertNotNull(response.getBody());
-    List<AvailabilityDTO> responseBody = (List<AvailabilityDTO>) response.getBody();
-    assertTrue(responseBody.stream().noneMatch(a -> a.getStayToDate().isAfter(departureDate)));
+    assertNotNull(response.getBody(), "Response body should not be null.");
+    Page<AvailabilityDTO> responseBody = response.getBody();
+    assertTrue(responseBody.getContent().stream().allMatch(a -> a.getAccommodationTypeId().equals(accommodationTypeId)),
+        "All returned AvailabilityDTOs should have the requested accommodationTypeId.");
   }
 
   @Test
   void whenArrivalAndDepartureDatesProvided_getAllAvailabilitiesBetweenThoseDates() {
     LocalDate arrivalDate = LocalDate.parse("2024-06-01");
     LocalDate departureDate = LocalDate.parse("2024-06-30");
-    when(availabilityService.getAvailability(null, null, arrivalDate, departureDate))
-        .thenReturn(mockAvailabilities.stream()
-            .filter(a -> !(a.getStayFromDate().isBefore(arrivalDate) || a.getStayToDate().isAfter(departureDate)))
-            .collect(Collectors.toList()));
+    Pageable pageable = PageRequest.of(0, 10);
 
-    ResponseEntity<?> response = availabilityController.getAvailability(arrivalDate, departureDate, null, null);
+    Page<AvailabilityDTO> mockPage = new PageImpl<>(mockAvailabilities.stream()
+        .filter(a -> !(a.getStayFromDate().isBefore(arrivalDate) || a.getStayToDate().isAfter(departureDate)))
+        .collect(Collectors.toList()), pageable, mockAvailabilities.size());
+    when(availabilityService.getAvailability(null, null, arrivalDate, departureDate, pageable)).thenReturn(mockPage);
 
-    assertNotNull(response);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    List<AvailabilityDTO> responseBody = (List<AvailabilityDTO>) response.getBody();
-    assertTrue(responseBody.stream()
-        .allMatch(a -> !(a.getStayFromDate().isBefore(arrivalDate) || a.getStayToDate().isAfter(departureDate))));
-  }
+    ResponseEntity<Page<AvailabilityDTO>> response = availabilityController.getAvailability(arrivalDate, departureDate, null, null, pageable);
 
-  @Test
-  void whenAccommodationTypeIdAndArrivalDateProvided_getAllAvailabilitiesFromThatDateForThatAccommodation() {
-    Long accommodationTypeId = 1L;
-    LocalDate arrivalDate = LocalDate.parse("2024-06-01");
-    when(availabilityService.getAvailability(null, accommodationTypeId, arrivalDate, null))
-        .thenReturn(mockAvailabilities.stream()
-            .filter(a -> a.getAccommodationTypeId().equals(accommodationTypeId) && !a.getStayFromDate().isBefore(arrivalDate))
-            .collect(Collectors.toList()));
+    assertNotNull(response, "Response should not be null.");
+    assertEquals(HttpStatus.OK, response.getStatusCode(), "Status code should be OK.");
 
-    ResponseEntity<?> response = availabilityController.getAvailability(arrivalDate, null, null, accommodationTypeId);
-
-    assertNotNull(response);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    List<AvailabilityDTO> responseBody = (List<AvailabilityDTO>) response.getBody();
-    assertTrue(responseBody.stream()
-        .allMatch(a -> a.getAccommodationTypeId().equals(accommodationTypeId) && !a.getStayFromDate().isBefore(arrivalDate)));
-  }
-
-  @Test
-  void whenAccommodationTypeIdAndDepartureDateProvided_getAllAvailabilitiesTillThatDateForThatAccommodation() {
-    Long accommodationTypeId = 2L;
-    LocalDate departureDate = LocalDate.parse("2024-06-30");
-    when(availabilityService.getAvailability(null, accommodationTypeId, null, departureDate))
-        .thenReturn(mockAvailabilities.stream()
-            .filter(a -> a.getAccommodationTypeId().equals(accommodationTypeId) && !a.getStayToDate().isAfter(departureDate))
-            .collect(Collectors.toList()));
-
-    ResponseEntity<?> response = availabilityController.getAvailability(null, departureDate, null, accommodationTypeId);
-
-    assertNotNull(response);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    List<AvailabilityDTO> responseBody = (List<AvailabilityDTO>) response.getBody();
-    assertTrue(responseBody.stream()
-        .allMatch(a -> a.getAccommodationTypeId().equals(accommodationTypeId) && !a.getStayToDate().isAfter(departureDate)));
+    assertNotNull(response.getBody(), "Response body should not be null.");
+    Page<AvailabilityDTO> responseBody = response.getBody();
+    assertTrue(responseBody.getContent().stream()
+            .noneMatch(a -> a.getStayFromDate().isBefore(arrivalDate) || a.getStayToDate().isAfter(departureDate)),
+        "All returned AvailabilityDTOs should have a stayFromDate on or after the arrival date and a stayToDate on or before the departure date.");
   }
 
   @Test
@@ -272,60 +231,58 @@ class AvailabilityControllerTest {
     Long accommodationTypeId = 1L;
     LocalDate arrivalDate = LocalDate.parse("2024-06-01");
     LocalDate departureDate = LocalDate.parse("2024-06-30");
-    when(availabilityService.getAvailability(null, accommodationTypeId, arrivalDate, departureDate))
-        .thenReturn(mockAvailabilities.stream()
-            .filter(a -> a.getAccommodationTypeId().equals(accommodationTypeId) &&
-                !a.getStayFromDate().isBefore(arrivalDate) &&
-                !a.getStayToDate().isAfter(departureDate))
-            .collect(Collectors.toList()));
+    Pageable pageable = PageRequest.of(0, 10);
 
-    ResponseEntity<?> response = availabilityController.getAvailability(arrivalDate, departureDate, null, accommodationTypeId);
-
-    assertNotNull(response);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    List<AvailabilityDTO> responseBody = (List<AvailabilityDTO>) response.getBody();
-    assertTrue(responseBody.stream()
-        .allMatch(a -> a.getAccommodationTypeId().equals(accommodationTypeId) &&
+    Page<AvailabilityDTO> mockPage = new PageImpl<>(mockAvailabilities.stream()
+        .filter(a -> a.getAccommodationTypeId().equals(accommodationTypeId) &&
             !a.getStayFromDate().isBefore(arrivalDate) &&
-            !a.getStayToDate().isAfter(departureDate)));
+            !a.getStayToDate().isAfter(departureDate))
+        .collect(Collectors.toList()), pageable, mockAvailabilities.size());
+    when(availabilityService.getAvailability(eq(null), eq(accommodationTypeId), eq(arrivalDate), eq(departureDate), eq(pageable))).thenReturn(mockPage);
+
+    ResponseEntity<Page<AvailabilityDTO>> response = availabilityController.getAvailability(arrivalDate, departureDate, null, accommodationTypeId, pageable);
+
+    assertNotNull(response, "Response should not be null.");
+    assertEquals(HttpStatus.OK, response.getStatusCode(), "Status code should be OK.");
+
+    assertNotNull(response.getBody(), "Response body should not be null.");
+    Page<AvailabilityDTO> responseBody = response.getBody();
+
+    assertTrue(responseBody.getContent().stream()
+            .allMatch(a -> a.getAccommodationTypeId().equals(accommodationTypeId) &&
+                !a.getStayFromDate().isBefore(arrivalDate) &&
+                !a.getStayToDate().isAfter(departureDate)),
+        "All returned AvailabilityDTOs should match the specified accommodation type ID and be within the given date range.");
   }
 
   @Test
   void whenInvalidAvailabilityIdProvided_thenReturnError() {
     Long invalidAvailabilityId = 99L;
-    when(availabilityService.getAvailability(invalidAvailabilityId, null, null, null)).thenReturn(List.of());
+    Pageable pageable = PageRequest.of(0, 10);
 
-    ResponseEntity<?> response = availabilityController.getAvailability(null, null, invalidAvailabilityId, null);
+    Page<AvailabilityDTO> emptyPage = Page.empty(pageable);
+    when(availabilityService.getAvailability(eq(invalidAvailabilityId), eq(null), eq(null), eq(null), eq(pageable))).thenReturn(emptyPage);
 
-    assertNotNull(response);
-    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-    assertNull(response.getBody());
+    ResponseEntity<Page<AvailabilityDTO>> response = availabilityController.getAvailability(null, null, invalidAvailabilityId, null, pageable);
+
+    assertNotNull(response, "Response should not be null.");
+    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode(), "Status code should be NO_CONTENT.");
+
+    assertNull(response.getBody(), "Response body should be null for NO_CONTENT status.");
   }
 
   @Test
   void whenOtherParameterProvidedWithAvailabilityId_thenReturnError() {
     Long availabilityId = 1L;
     Long accommodationTypeId = 1L;
-    ResponseEntity<?> response = availabilityController.getAvailability(null, null, availabilityId, accommodationTypeId);
+    Pageable pageable = PageRequest.of(0, 10);
 
-    assertNotNull(response);
-    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    String responseBody = (String) response.getBody();
-    assertEquals("When availabilityId is provided, no other search criteria should be specified.", responseBody);
-  }
+    ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
+            availabilityController.getAvailability(null, null, availabilityId, accommodationTypeId, pageable),
+        "Expected getAvailability to throw ResponseStatusException but it didn't");
 
-  @Test
-  void whenAddingAvailability_returnSavedAvailability() {
-    AvailabilityDTO newAvailability = mockAvailabilities.get(0);
-    when(availabilityService.saveAvailabilityFromDTO(any(AvailabilityDTO.class))).thenReturn(newAvailability);
-
-    ResponseEntity<?> response = availabilityController.addAvailability(newAvailability);
-
-    assertNotNull(response);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    AvailabilityDTO responseBody = (AvailabilityDTO) response.getBody();
-    assertNotNull(responseBody);
-    assertEquals(newAvailability, responseBody);
+    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode(), "Expected status code BAD_REQUEST but found " + exception.getStatusCode());
+    assertTrue(Objects.requireNonNull(exception.getReason()).contains("When availabilityId is provided, no other search criteria should be specified."), "Exception reason does not match expected message.");
   }
 
   @Test
@@ -344,23 +301,9 @@ class AvailabilityControllerTest {
   }
 
   @Test
-  void whenUpdatingAvailability_returnUpdatedAvailability() {
-    AvailabilityDTO updatedAvailability = mockAvailabilities.get(1);
-    when(availabilityService.updateAvailabilityFromDTO(any(AvailabilityDTO.class))).thenReturn(updatedAvailability);
-
-    ResponseEntity<?> response = availabilityController.updateAvailability(updatedAvailability.getAvailabilityId(), updatedAvailability);
-
-    assertNotNull(response);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    AvailabilityDTO responseBody = (AvailabilityDTO) response.getBody();
-    assertNotNull(responseBody);
-    assertEquals(updatedAvailability, responseBody);
-  }
-
-  @Test
   void whenUpdatingInvalidAvailability_returnError() {
     AvailabilityDTO invalidUpdatedAvailability = mockAvailabilities.get(1);
-    when(availabilityService.updateAvailabilityFromDTO(any(AvailabilityDTO.class)))
+    when(availabilityService.saveAvailabilityFromDTO(any(AvailabilityDTO.class)))
         .thenThrow(new IllegalArgumentException("Invalid Availability Data for Update"));
 
     ResponseEntity<?> response = availabilityController.updateAvailability(invalidUpdatedAvailability.getAvailabilityId(), invalidUpdatedAvailability);

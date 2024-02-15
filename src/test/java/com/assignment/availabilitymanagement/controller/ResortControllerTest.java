@@ -2,18 +2,21 @@ package com.assignment.availabilitymanagement.controller;
 
 import com.assignment.availabilitymanagement.dto.ResortDTO;
 import com.assignment.availabilitymanagement.service.ResortService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -28,40 +31,43 @@ class ResortControllerTest {
   @InjectMocks
   private ResortController resortController;
 
-  @BeforeEach
-  void setUp() {
+  @Test
+  void whenNoParameterProvided_shouldReturnAllResorts() {
     ResortDTO resortDTO1 = new ResortDTO(1L, "Resort One");
     ResortDTO resortDTO2 = new ResortDTO(2L, "Resort Two");
     ResortDTO resortDTO3 = new ResortDTO(3L, "Resort Three");
 
-    List<ResortDTO> mockResorts = Arrays.asList(resortDTO1, resortDTO2, resortDTO3);
+    Page<ResortDTO> mockResorts = new PageImpl<>(Arrays.asList(resortDTO1, resortDTO2, resortDTO3));
 
-    lenient().when(resortService.getResorts(null)).thenReturn(mockResorts);
-    lenient().when(resortService.getResorts(1L)).thenReturn(List.of(resortDTO1));
-  }
+    when(resortService.getResorts(null, Pageable.ofSize(1)))
+        .thenReturn(mockResorts);
 
-
-  @Test
-  void whenNoParameterProvided_shouldReturnAllResorts() {
-    ResponseEntity<?> response = resortController.getResorts(null);
+    ResponseEntity<Page<ResortDTO>> response = (ResponseEntity<Page<ResortDTO>>) resortController.getResorts(null, Pageable.ofSize(1));
 
     assertNotNull(response);
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    List<ResortDTO> responseBody = (List<ResortDTO>) response.getBody();
+    Page<ResortDTO> responseBody = response.getBody();
     assertNotNull(responseBody);
-    assertEquals(3, responseBody.size());
+    assertEquals(3, responseBody.getTotalElements());
   }
 
   @Test
   void whenResortIdProvided_shouldReturnResortWithGivenId() {
-    ResponseEntity<?> response = resortController.getResorts(1L);
+    ResortDTO resortDTO = new ResortDTO(1L, "Resort One");
+
+    Page<ResortDTO> mockResorts = new PageImpl<>(Collections.singletonList(resortDTO));
+
+    when(resortService.getResorts(1L, null))
+        .thenReturn(mockResorts);
+
+    ResponseEntity<Page<ResortDTO>> response = (ResponseEntity<Page<ResortDTO>>) resortController.getResorts(1L, null);
 
     assertNotNull(response);
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    List<ResortDTO> responseBody = (List<ResortDTO>) response.getBody();
+    Page<ResortDTO> responseBody = response.getBody();
     assertNotNull(responseBody);
-    assertEquals(1, responseBody.size());
-    assertEquals(1L, responseBody.get(0).getResortId());
+    assertEquals(1, responseBody.getTotalElements());
+    assertEquals(1L, responseBody.getContent().get(0).getResortId());
   }
 
   @Test
@@ -134,7 +140,7 @@ class ResortControllerTest {
 
     assertNotNull(response);
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertTrue(((String) response.getBody()).contains("successfully deleted"));
+    assertTrue(((String) Objects.requireNonNull(response.getBody())).contains("successfully deleted"));
   }
 
   @Test
