@@ -6,12 +6,14 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 /**
  * Controller for managing accommodation types within the application.
@@ -27,18 +29,20 @@ public class AccommodationTypeController {
   private AccommodationTypeService accommodationTypeService;
 
   /**
-   * Retrieves a list of all accommodation types, optionally filtered by accommodation type ID or availability within a date range.
+   * Retrieves a paginated list of all accommodation types, optionally filtered by accommodation type ID or availability within a date range.
    *
    * @param accommodationTypeId Optional ID of the accommodation type for filtering.
    * @param arrivalDate         Optional arrival date for availability checking.
    * @param departureDate       Optional departure date for availability checking.
-   * @return ResponseEntity containing the list of accommodation types or an appropriate error message.
+   * @param pageable            Pagination information including page number, page size, and sorting criteria.
+   * @return ResponseEntity containing the paginated list of accommodation types or an appropriate error message.
    */
   @GetMapping
   public ResponseEntity<?> getAccommodationTypes(
       @RequestParam(required = false) Long accommodationTypeId,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate arrivalDate,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate) {
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
+      @PageableDefault(size = 10) Pageable pageable) {
     try {
       if (accommodationTypeId != null && (arrivalDate != null || departureDate != null)) {
         return ResponseEntity.badRequest().body("Cannot specify accommodationTypeId together with arrivalDate or departureDate.");
@@ -49,12 +53,12 @@ public class AccommodationTypeController {
         return ResponseEntity.badRequest().body("Both arrival and departure dates are required to check availability.");
       }
 
-      List<AccommodationTypeDTO> accommodationTypes = accommodationTypeService.getAccommodationTypes(accommodationTypeId, arrivalDate, departureDate);
-      if (accommodationTypes.isEmpty()) {
+      Page<AccommodationTypeDTO> accommodationTypesPage = accommodationTypeService.getAccommodationTypes(accommodationTypeId, arrivalDate, departureDate, pageable);
+      if (accommodationTypesPage.getContent().isEmpty()) {
         logger.debug("No matching accommodation types found.");
         return ResponseEntity.notFound().build();
       }
-      return ResponseEntity.ok(accommodationTypes);
+      return ResponseEntity.ok(accommodationTypesPage);
     } catch (Exception e) {
       logger.error("Error retrieving available accommodation types: {}", e.getMessage());
       return ResponseEntity.internalServerError().body("Internal server error occurred while processing your request.");

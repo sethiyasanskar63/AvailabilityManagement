@@ -7,16 +7,17 @@ import com.assignment.availabilitymanagement.entity.Resort;
 import com.assignment.availabilitymanagement.mapper.AvailabilityMapper;
 import com.assignment.availabilitymanagement.repository.AccommodationTypeRepository;
 import com.assignment.availabilitymanagement.repository.AvailabilityRepository;
-import com.assignment.availabilitymanagement.specification.AvailabilitySpecification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 
-import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("unchecked")
 class AvailabilityServiceImplTest {
 
   @Mock
@@ -41,16 +43,17 @@ class AvailabilityServiceImplTest {
   private AvailabilityServiceImpl availabilityService;
 
   private AvailabilityDTO availabilityDTO;
-  private Availability availability;
 
   @BeforeEach
   void setUp() {
+    MockitoAnnotations.openMocks(this);
+
     AccommodationType accommodationType = new AccommodationType();
     accommodationType.setAccommodationTypeId(1L);
     accommodationType.setAccommodationTypeName("Test Accommodation");
     accommodationType.setResort(new Resort(1L, "Test Resort"));
 
-    availability = new Availability();
+    Availability availability = new Availability();
     availability.setAvailabilityId(1L);
     availability.setAccommodationType(accommodationType);
 
@@ -58,30 +61,36 @@ class AvailabilityServiceImplTest {
     availabilityDTO.setAvailabilityId(1L);
     availabilityDTO.setAccommodationTypeId(1L);
 
+    // Setup mocks
     lenient().when(availabilityMapper.toDto(any(Availability.class))).thenReturn(availabilityDTO);
     lenient().when(availabilityMapper.toEntity(any(AvailabilityDTO.class))).thenReturn(availability);
     lenient().when(accommodationTypeRepository.findById(anyLong())).thenReturn(Optional.of(accommodationType));
     lenient().when(availabilityRepository.save(any(Availability.class))).thenReturn(availability);
+    lenient().when(availabilityRepository.findAll(any(Specification.class), any(Sort.class)))
+        .thenReturn(Collections.singletonList(availability));
   }
 
   @Test
   void getAvailability() {
-    when(availabilityRepository.findAll(any(AvailabilitySpecification.class))).thenReturn(Collections.singletonList(availability));
+    // Execute the service method with specific criteria
+    List<AvailabilityDTO> result = availabilityService.getAvailability(null, 1L, null, null);
 
-    List<AvailabilityDTO> result = availabilityService.getAvailability(null, 1L, LocalDate.now(), LocalDate.now().plusDays(1));
-
-    assertNotNull(result);
-    assertFalse(result.isEmpty());
-    assertEquals(1, result.size());
-    assertEquals(availabilityDTO.getAvailabilityId(), result.get(0).getAvailabilityId());
+    // Assertions to validate the expected outcome
+    assertNotNull(result, "The result should not be null.");
+    assertFalse(result.isEmpty(), "The result list should not be empty.");
+    assertEquals(1, result.size(), "The result list should contain exactly one element.");
+    AvailabilityDTO returnedDTO = result.get(0);
+    assertEquals(availabilityDTO.getAvailabilityId(), returnedDTO.getAvailabilityId(), "The availability ID should match the expected value.");
+    assertEquals(availabilityDTO.getAccommodationTypeId(), returnedDTO.getAccommodationTypeId(), "The accommodation type ID should match the expected value.");
   }
+
 
   @Test
   void saveAvailabilityFromDTO() {
-    AvailabilityDTO result = availabilityService.saveAvailabilityFromDTO(availabilityDTO);
+    String result = availabilityService.saveAvailabilityFromDTO(availabilityDTO);
 
     assertNotNull(result);
-    assertEquals(availabilityDTO.getAvailabilityId(), result.getAvailabilityId());
+    assertEquals("Availability Saved", result);
   }
 
   @Test

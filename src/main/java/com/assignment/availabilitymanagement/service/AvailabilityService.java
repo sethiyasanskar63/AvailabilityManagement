@@ -2,7 +2,8 @@ package com.assignment.availabilitymanagement.service;
 
 import com.assignment.availabilitymanagement.dto.AvailabilityDTO;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,25 +15,36 @@ import java.util.List;
 public interface AvailabilityService {
 
   /**
-   * Retrieves a list of availabilities based on the provided criteria. Each parameter is optional and used to filter the results.
+   * Fetches a list of all availabilities without applying pagination. This method retrieves availabilities based on optional filtering criteria.
+   * If no parameters are provided, all availabilities are returned. Use this method with caution to avoid performance issues with large datasets.
    *
-   * @param availabilityId      Optional ID of the specific availability.
-   * @param accommodationTypeId Optional ID of the accommodation type for filtering.
-   * @param arrivalDate         Optional start date for the availability period.
-   * @param departureDate       Optional end date for the availability period.
-   * @return A list of {@link AvailabilityDTO} matching the criteria.
+   * @param availabilityId      Optional. The specific ID of the availability to retrieve. If provided, filters the results to include only the availability with this ID.
+   * @param accommodationTypeId Optional. The ID of the accommodation type to filter availabilities. If provided, only availabilities associated with this accommodation type are included.
+   * @param arrivalDate         Optional. The start date of the availability period for filtering. If provided, only availabilities starting on or after this date are included.
+   * @param departureDate       Optional. The end date of the availability period for filtering. If provided, only availabilities ending on or before this date are included.
+   * @return A list of {@link AvailabilityDTO} objects that match the provided criteria.
    */
   List<AvailabilityDTO> getAvailability(Long availabilityId, Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate);
+
+  /**
+   * Fetches a page of availabilities based on optional filtering criteria and pagination information. This method is useful for large datasets where
+   * retrieving all records at once could impact performance. Each parameter is optional and used to filter the results.
+   *
+   * @param availabilityId      Optional. The specific ID of the availability to retrieve. If provided, filters the results to include only the availability with this ID.
+   * @param accommodationTypeId Optional. The ID of the accommodation type to filter availabilities. If provided, only availabilities associated with this accommodation type are included.
+   * @param arrivalDate         Optional. The start date of the availability period for filtering. If provided, only availabilities starting on or after this date are included.
+   * @param departureDate       Optional. The end date of the availability period for filtering. If provided, only availabilities ending on or before this date are included.
+   * @param pageable            The {@link Pageable} instance containing pagination information such as page number, page size, and sorting criteria.
+   * @return A {@link Page} of {@link AvailabilityDTO} objects that match the provided criteria. This object contains the requested page of availabilities, along with additional pagination information.
+   */
+  Page<AvailabilityDTO> getAvailability(Long availabilityId, Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate, Pageable pageable);
 
   /**
    * Saves an availability record from the provided AvailabilityDTO.
    *
    * @param availabilityDTO DTO containing the availability information to be saved.
    */
-  AvailabilityDTO saveAvailabilityFromDTO(AvailabilityDTO availabilityDTO);
-
-  @Transactional
-  AvailabilityDTO updateAvailabilityFromDTO(AvailabilityDTO availabilityDTO);
+  String saveAvailabilityFromDTO(AvailabilityDTO availabilityDTO);
 
   /**
    * Saves all availabilities contained within a provided Excel workbook.

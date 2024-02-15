@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +50,24 @@ public class AccommodationTypeServiceImpl implements AccommodationTypeService {
     return accommodationTypes.stream()
         .map(accommodationTypeMapper::entityToDto)
         .collect(Collectors.toList());
+  }
+
+  /**
+   * Retrieves accommodation types based on the given criteria with pagination.
+   *
+   * @param accommodationTypeId Optional ID for filtering a specific accommodation type.
+   * @param arrivalDate         Optional start date for availability filtering.
+   * @param departureDate       Optional end date for availability filtering.
+   * @param pageable            Pagination information.
+   * @return A page of {@link AccommodationTypeDTO} that match the criteria.
+   */
+  @Override
+  @Transactional(readOnly = true)
+  public Page<AccommodationTypeDTO> getAccommodationTypes(Long accommodationTypeId, LocalDate arrivalDate, LocalDate departureDate, Pageable pageable) {
+    AccommodationTypeSpecification specification = new AccommodationTypeSpecification(accommodationTypeId, arrivalDate, departureDate);
+    Page<AccommodationType> accommodationTypes = accommodationTypeRepository.findAll(specification, pageable);
+    logger.debug("Retrieved {} accommodation types based on the given criteria.", accommodationTypes.getTotalElements());
+    return accommodationTypes.map(accommodationTypeMapper::entityToDto);
   }
 
   /**

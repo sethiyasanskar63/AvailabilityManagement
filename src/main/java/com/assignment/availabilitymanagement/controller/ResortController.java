@@ -7,11 +7,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * Handles resort-related operations, offering endpoints for CRUD operations on resorts.
@@ -26,15 +27,20 @@ public class ResortController {
   private ResortService resortService;
 
   /**
-   * Retrieves resorts, optionally filtered by resort ID.
+   * Retrieves a paginated list of resorts, optionally filtered by resort ID. Supports pagination
+   * to efficiently manage large sets of data.
    *
-   * @param resortId Optional ID to filter the resort.
-   * @return ResponseEntity with List of ResortDTOs or a specific resort if ID is provided, including not found or bad request errors.
+   * @param resortId Optional ID to filter the resort. If provided, attempts to fetch a specific resort.
+   *                 Otherwise, fetches all resorts.
+   * @param pageable {@link Pageable} object containing pagination information such as page number,
+   *                 page size, and sorting criteria.
+   * @return ResponseEntity containing a {@link Page} of {@link ResortDTO}s if successful, including
+   * pagination information, or appropriate error responses otherwise.
    */
   @GetMapping
-  public ResponseEntity<?> getResorts(@RequestParam(required = false) Long resortId) {
+  public ResponseEntity<?> getResorts(@RequestParam(required = false) Long resortId, @PageableDefault(size = 10) Pageable pageable) {
     try {
-      List<ResortDTO> resorts = resortService.getResorts(resortId);
+      Page<ResortDTO> resorts = resortService.getResorts(resortId, pageable);
       if (resorts.isEmpty() && resortId != null) {
         String message = String.format("No resort found with ID: %d", resortId);
         logger.debug(message);
@@ -46,6 +52,7 @@ public class ResortController {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving resorts due to an internal error.");
     }
   }
+
 
   /**
    * Adds a new resort.

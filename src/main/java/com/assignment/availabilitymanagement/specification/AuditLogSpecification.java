@@ -54,14 +54,13 @@ public class AuditLogSpecification implements Specification<AuditLog> {
       if (auditLogId != null) {
         predicates.add(cb.equal(root.get("logId"), auditLogId));
       }
-      if (startDate != null) {
-        predicates.add(cb.greaterThanOrEqualTo(root.<LocalDate>get("creationDate"), startDate));
-      }
-      if (endDate != null) {
-        predicates.add(cb.lessThanOrEqualTo(root.<LocalDate>get("creationDate"), endDate));
+      if (startDate != null && endDate != null) {
+        Predicate startDatePredicate = cb.greaterThanOrEqualTo(root.get("creationDate"), startDate);
+        Predicate endDatePredicate = cb.lessThanOrEqualTo(root.get("creationDate"), endDate);
+        predicates.add(cb.and(startDatePredicate, endDatePredicate));
       }
     } catch (Exception e) {
-      logger.error("Error building predicates in AuditLogSpecification for auditLogId: {}", auditLogId, e);
+      logger.error("Error building predicates in AuditLogSpecification", e);
     }
     return cb.and(predicates.toArray(new Predicate[0]));
   }

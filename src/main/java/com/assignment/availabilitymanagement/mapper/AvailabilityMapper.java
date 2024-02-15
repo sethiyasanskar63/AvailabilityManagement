@@ -58,7 +58,7 @@ public abstract class AvailabilityMapper {
    * @return The mapped {@link Availability} entity.
    */
   @Mappings({
-      @Mapping(target = "accommodationType", ignore = true), // Handled by @BeforeMapping
+      @Mapping(target = "accommodationType", ignore = true),
       @Mapping(target = "arrivalDays", source = "arrivalDays", qualifiedByName = "daysArrayToBitmask"),
       @Mapping(target = "departureDays", source = "departureDays", qualifiedByName = "daysArrayToBitmask")
   })
