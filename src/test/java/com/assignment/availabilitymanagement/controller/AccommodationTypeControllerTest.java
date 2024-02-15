@@ -61,7 +61,7 @@ class AccommodationTypeControllerTest {
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
-    assertTrue(response.getBody() instanceof Page);
+    assertInstanceOf(Page.class, response.getBody());
     assertEquals(3, ((Page<AccommodationTypeDTO>) response.getBody()).getTotalElements());
   }
 
@@ -71,7 +71,7 @@ class AccommodationTypeControllerTest {
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
-    assertTrue(response.getBody() instanceof Page);
+    assertInstanceOf(Page.class, response.getBody());
     assertEquals(1, ((Page<AccommodationTypeDTO>) response.getBody()).getTotalElements());
     assertEquals(1L, ((Page<AccommodationTypeDTO>) response.getBody()).getContent().get(0).getAccommodationTypeId());
   }
@@ -82,7 +82,7 @@ class AccommodationTypeControllerTest {
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNotNull(response.getBody());
-    assertTrue(response.getBody() instanceof Page);
+    assertInstanceOf(Page.class, response.getBody());
     assertFalse(((Page<AccommodationTypeDTO>) response.getBody()).getContent().isEmpty());
   }
 
