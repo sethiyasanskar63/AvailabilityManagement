@@ -181,6 +181,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
 
     // New availability ends before the last existing availability
     if (newAvailability.getStayToDate().isBefore(existingAvailabilities.get(existingAvailabilities.size() - 1).getStayToDate())) {
+      updatedAvailabilities.add(new Availability(null,newAvailability.getStayFromDate(),newAvailability.getStayToDate(), newAvailability.getMinNight(),newAvailability.getArrivalDays(), newAvailability.getDepartureDays(),null,newAvailability.getAccommodationType()));
       updatedAvailabilities.add(new Availability(null, newAvailability.getStayToDate().plusDays(1),
           existingAvailabilities.get(existingAvailabilities.size() - 1).getStayToDate(),
           existingAvailabilities.get(existingAvailabilities.size() - 1).getMinNight(),
